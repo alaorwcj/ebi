@@ -36,6 +36,16 @@ export default function GeneralReport() {
         <p>Grupos: {JSON.stringify(report.by_group)}</p>
         <p>Media mensal: {report.average_presence_month.toFixed(2)}</p>
         <p>Media anual: {report.average_presence_year.toFixed(2)}</p>
+        <div style={{ marginTop: "12px" }}>
+          <strong>Colaboradoras cadastradas</strong>
+          <ul>
+            {report.people.map((person, index) => (
+              <li key={`${person.full_name}-${index}`}>
+                {person.full_name} - {person.role === "COORDENADORA" ? "Coordenadora" : "Colaboradora"}
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
       <ChartCard title="Presencas nos ultimos 3 meses">
         <Bar
