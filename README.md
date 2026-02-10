@@ -73,8 +73,42 @@ Para essa conta considerar:
 - PostgreSQL local (fora do Docker)
 - Node.js opcional para rodar frontend sem Docker
 
-## Configurar Postgres local
-1) Crie usuario e banco:
+## Guia passo a passo (Windows e Linux, com ou sem WSL)
+
+### 1) Instalar Postgres local
+
+Windows (sem WSL)
+- Baixe e instale pelo site oficial: https://www.postgresql.org/download/windows/
+- Durante a instalacao, mantenha a porta 5432.
+
+Linux (sem WSL)
+```bash
+sudo apt update && sudo apt install -y postgresql
+sudo service postgresql start
+```
+
+WSL (Ubuntu)
+```bash
+sudo apt update && sudo apt install -y postgresql
+sudo service postgresql start
+```
+
+### 2) Configurar Postgres para conexoes externas
+
+Linux/WSL:
+```bash
+sudo sed -i "s|^#listen_addresses.*|listen_addresses = '*'|" /etc/postgresql/16/main/postgresql.conf
+sudo sed -i "s|^listen_addresses.*|listen_addresses = '*'|" /etc/postgresql/16/main/postgresql.conf
+echo "host all all 0.0.0.0/0 md5" | sudo tee -a /etc/postgresql/16/main/pg_hba.conf
+sudo pg_ctlcluster 16 main restart
+```
+
+Windows:
+- Abra o arquivo `postgresql.conf` e ajuste `listen_addresses = '*'`.
+- No `pg_hba.conf`, adicione: `host all all 0.0.0.0/0 md5`.
+- Reinicie o servico do PostgreSQL.
+
+### 3) Criar usuario e banco
 
 ```sql
 CREATE USER ebi_user WITH PASSWORD 'ebi_pass';
@@ -82,14 +116,29 @@ CREATE DATABASE ebi_vila_paula OWNER ebi_user;
 GRANT ALL PRIVILEGES ON DATABASE ebi_vila_paula TO ebi_user;
 ```
 
-2) Garanta que o Postgres esteja escutando em 5432 e acessivel pelo host.
+### 4) Definir DB_HOST correto
 
-## Variaveis de ambiente
-Crie um arquivo `.env` na raiz (opcional) e ajuste se necessario:
+Windows (Postgres instalado no Windows):
+```
+DB_HOST=host.docker.internal
+```
+
+Linux sem WSL:
+```
+DB_HOST=host.docker.internal
+```
+
+WSL:
+```bash
+hostname -I | awk '{print $1}'
+```
+Use o IP retornado no `.env` como `DB_HOST`.
+
+### 5) Variaveis de ambiente (.env)
 
 ```
 APP_SECRET_KEY=change_me
-DB_HOST=host.docker.internal
+DB_HOST=<SEU_DB_HOST>
 DB_PORT=5432
 DB_NAME=ebi_vila_paula
 DB_USER=ebi_user
@@ -98,29 +147,44 @@ VITE_API_URL=http://localhost:8000/api/v1
 ALLOW_BOOTSTRAP=true
 ```
 
-## Subir containers
+### 6) Subir containers
 
 ```bash
-docker compose up --build
+docker compose up -d --build
 ```
 
-Frontend: http://localhost:5173
-Backend: http://localhost:8000/docs
+### 7) Rodar migrations
 
-## Linux (Postgres local)
+```bash
+docker compose run --rm -e PYTHONPATH=/app backend alembic upgrade head
+```
+
+### 8) Popular banco (opcional)
+
+```bash
+docker compose run --rm -e PYTHONPATH=/app backend python -m app.seed
+```
+
+### 9) Acessar a aplicacao
+- Frontend: http://localhost:5173
+- Backend (Swagger): http://localhost:8000/docs
+
+Credenciais do seed:
+- Coordenadora: coord@ebi.local / admin123
+- Colaboradora: colab@ebi.local / colab123
+
+### Observacoes por ambiente
+
+Linux (Postgres local)
 - Opcao 1 (padrao no compose): `extra_hosts` com `host-gateway`.
 - Opcao 2: usar `network_mode: "host"` no servico backend (remover `ports`).
 
-## Rodar migrations (Alembic)
+WSL
+- Se o WSL reiniciar e o IP mudar, atualize o `DB_HOST` no `.env` e reinicie os containers:
 
 ```bash
-docker compose run --rm backend alembic upgrade head
-```
-
-## Seed opcional (dados de exemplo)
-
-```bash
-docker compose run --rm backend python -m app.seed
+docker compose down
+docker compose up -d
 ```
 
 ## Bootstrap do usuario coordenadora
