@@ -5,46 +5,49 @@ Sistema web para controle de colaboradoras, criancas e presencas do EBI.
 ## Requisitos Sistema EBI Vila Paula
 
 1. Cadastro de Colaboradoras
+
 Esse cadastro tem a finalidade de registrar todas as irmas que colaboram o no EBI, sendo: Coordenadoras ou Colaboradoras.
 
 Campos do Cadastro:
-a. Nome Completo - Campo Texto
-b. Funcao - Campo select sendo 1. Coordenadora e 2. Colaboradora;
-c. Grupo: Campo select de 1 a 4;
-d. Contato - Campo com mascara de celular
-e. E-mail - Campo com mascara de e-mail
+- a. Nome Completo - Campo Texto
+- b. Funcao - Campo select sendo 1. Coordenadora e 2. Colaboradora;
+- c. Grupo: Campo select de 1 a 4;
+- d. Contato - Campo com mascara de celular
+- e. E-mail - Campo com mascara de e-mail
 
 Obs.: As irmas Coordenadoras devem ter acesso ao sistema com a finalidade de gerar relatorios e fornecer dados quantitativos para conhecimento do ministerio e a secretaria do EBI na regiao;
 
 Login: E-mail e senha alfanumerica com 8 caracteres;
 
 2. Cadastro de Criancas e Responsaveis
+
 Esse cadastro tem a finalidade de registrar todas as criancas e seus respectivos responsaveis que frequentam o EBI e a partir desse cadastro fornecer dados para os relatorios quantitativos.
 
 Campos do Cadastro:
-a. Nome da Crianca - Campo Texto
-b. Nome do responsavel - Campo Texto
-c. Contato - Campo com mascara de celular
+- a. Nome da Crianca - Campo Texto
+- b. Nome do responsavel - Campo Texto
+- c. Contato - Campo com mascara de celular
 
 3. Registro de Presenca
+
 Esta funcionalidade tem a a finalidade de registrar a presenca das criancas e responsaveis nos dias do EBI, essa funcao deve ter os seguintes campos:
 
-Ao clicar nesse menu o sistema deve abrir uma listagem com os EBIS realizados e deve ter um botao acima da listagem "Criar EBI";
-Ao clicar no botao Criar EBI o sistema direciona para uma tela com os seguintes dados:
+- Ao clicar nesse menu o sistema deve abrir uma listagem com os EBIS realizados e deve ter um botao acima da listagem "Criar EBI";
+- Ao clicar no botao Criar EBI o sistema direciona para uma tela com os seguintes dados:
 
 Dados do EBI
-Data: XX/XX/XXXX
-Grupo: Campo select de 1 a 4;
-Coordenadora: Campo select puxando do cadastro;
-Colaboradoras presentes: Campo select puxando do cadastro;
+- Data: XX/XX/XXXX
+- Grupo: Campo select de 1 a 4;
+- Coordenadora: Campo select puxando do cadastro;
+- Colaboradoras presentes: Campo select puxando do cadastro;
 
 Abaixo dos campos principais ter um botao para adicionar ou registrar presenca das criancas, contendo os seguintes dados na listagem:
 
-a. Nome da Crianca
-b. Nome do Responsavel - Vinculado ao cadastro da crianca, caso seja um responsavel diferente do cadastro, permitir ao usuario a possibilidade de editar o nome para o dia;
-c. Contato: Vinculado ao cadastro do responsavel, caso seja outro responsavel permitir editar;
-d. Horario de entrada
-e. Horario de saida
+- a. Nome da Crianca
+- b. Nome do Responsavel - Vinculado ao cadastro da crianca, caso seja um responsavel diferente do cadastro, permitir ao usuario a possibilidade de editar o nome para o dia;
+- c. Contato: Vinculado ao cadastro do responsavel, caso seja outro responsavel permitir editar;
+- d. Horario de entrada
+- e. Horario de saida
 
 Este EBI fica em aberto ate sua conclusao, ao registrar a presenca de uma crianca, o sistema deve considerar o horario de entrada;
 Para concluir o trabalho do dia, deve ter na listagem um campo para registrar saida, quando o responsavel for retirar a crianca, o sistema deve abrir uma modal para confirmar a saida da crianca;
@@ -52,17 +55,18 @@ Após a saida de todas as criancas devera habilitar um botao "Encerrar EBI";
 Após encerrar o EBI o sistema salva os dados e se houver necessidade devera ter um botao para gerar um relatorio do EBI na listagem exibindo todos os dados acima;
 
 4. Relatorio Geral
+
 O sistema deve ter uma funcao para gerar um relatorio geral do EBI contendo os seguintes dados no relatorio:
 
-a. Coordenadoras Cadastradas
-b. Colaboradoras Cadastradas
-c. Grupos
-d. Media mensal e anual de presenca
+- a. Coordenadoras Cadastradas
+- b. Colaboradoras Cadastradas
+- c. Grupos
+- d. Media mensal e anual de presenca
 Para essa conta considerar:
 - Mensal: Total de presenca do mes / Total de EBIs no mes
 - Anual: Total de presenca do ano / Total de EBIs no ano
-e. Grafico de barras com a quantidade de presenca dos ultimos 3 meses
-f. Grafico de media de presenca dos ultimos 12 meses;
+- e. Grafico de barras com a quantidade de presenca dos ultimos 3 meses
+- f. Grafico de media de presenca dos ultimos 12 meses;
 
 ## Requisitos
 - Docker + Docker Compose
