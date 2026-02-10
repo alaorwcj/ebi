@@ -33,6 +33,7 @@ export default function Login() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             type="email"
+            autoComplete="username"
             required
           />
           <FormField
@@ -40,6 +41,7 @@ export default function Login() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             type="password"
+            autoComplete="current-password"
             required
             minLength={8}
           />
