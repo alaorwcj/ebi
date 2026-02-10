@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { get, post, put } from "../api/client.js";
 import FormField from "../components/FormField.jsx";
 import Table from "../components/Table.jsx";
+import { maskPhone } from "../utils/mask.js";
+import { validateEmail, validatePassword, validatePhone } from "../utils/validators.js";
 
 const initialForm = {
   full_name: "",
@@ -32,6 +34,25 @@ export default function Users() {
 
   async function handleSubmit(event) {
     event.preventDefault();
+    const emailError = validateEmail(form.email);
+    const phoneError = validatePhone(form.phone);
+    if (emailError || phoneError) {
+      alert(emailError || phoneError);
+      return;
+    }
+    if (!editingId) {
+      const passwordError = validatePassword(form.password);
+      if (passwordError) {
+        alert(passwordError);
+        return;
+      }
+    } else if (form.password) {
+      const passwordError = validatePassword(form.password);
+      if (passwordError) {
+        alert(passwordError);
+        return;
+      }
+    }
     if (editingId) {
       await put(`/users/${editingId}`, form);
     } else {
@@ -47,7 +68,7 @@ export default function Users() {
     setForm({
       full_name: item.full_name,
       email: item.email,
-      phone: item.phone,
+      phone: maskPhone(item.phone || ""),
       role: item.role,
       group_number: item.group_number,
       password: ""
@@ -109,14 +130,14 @@ export default function Users() {
           <FormField
             label="Email"
             value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
+            onChange={(e) => setForm({ ...form, email: e.target.value.toLowerCase() })}
             type="email"
             required
           />
           <FormField
             label="Contato"
             value={form.phone}
-            onChange={(e) => setForm({ ...form, phone: e.target.value })}
+            onChange={(e) => setForm({ ...form, phone: maskPhone(e.target.value) })}
             required
           />
           <label className="label">Funcao</label>

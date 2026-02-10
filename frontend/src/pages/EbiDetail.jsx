@@ -6,6 +6,8 @@ import Table from "../components/Table.jsx";
 import ConfirmModal from "../components/ConfirmModal.jsx";
 import { formatDate, formatDateTime } from "../utils/format.js";
 import { getRole } from "../api/auth.js";
+import { maskPhone } from "../utils/mask.js";
+import { validatePhone } from "../utils/validators.js";
 
 export default function EbiDetail() {
   const { id } = useParams();
@@ -18,6 +20,7 @@ export default function EbiDetail() {
     guardian_phone_day: ""
   });
   const [confirmId, setConfirmId] = useState(null);
+  const [reopenOpen, setReopenOpen] = useState(false);
 
   async function load() {
     const data = await get(`/ebi/${id}`);
@@ -40,12 +43,17 @@ export default function EbiDetail() {
     setForm({
       child_id: childId,
       guardian_name_day: child.guardian_name,
-      guardian_phone_day: child.guardian_phone
+      guardian_phone_day: maskPhone(child.guardian_phone || "")
     });
   }
 
   async function handleAddPresence(event) {
     event.preventDefault();
+    const phoneError = validatePhone(form.guardian_phone_day);
+    if (phoneError) {
+      alert(phoneError);
+      return;
+    }
     await post(`/ebi/${id}/presence`, {
       child_id: Number(form.child_id),
       guardian_name_day: form.guardian_name_day,
@@ -66,6 +74,12 @@ export default function EbiDetail() {
     load();
   }
 
+  async function handleReopenEbi() {
+    await post(`/ebi/${id}/reopen`, {});
+    setReopenOpen(false);
+    load();
+  }
+
   if (!ebi) return <div className="card">Carregando...</div>;
 
   const allClosed = ebi.presences.every((item) => item.exit_at);
@@ -80,9 +94,18 @@ export default function EbiDetail() {
             <p className="muted">Status: {ebi.status}</p>
           </div>
           {role === "COORDENADORA" && (
-            <button className="button" disabled={!allClosed || ebi.status === "ENCERRADO"} onClick={handleCloseEbi}>
-              Encerrar EBI
-            </button>
+            <div className="flex">
+              <button className="button" disabled={!allClosed || ebi.status === "ENCERRADO"} onClick={handleCloseEbi}>
+                Encerrar EBI
+              </button>
+              <button
+                className="button secondary"
+                disabled={ebi.status !== "ENCERRADO"}
+                onClick={() => setReopenOpen(true)}
+              >
+                Reabrir EBI
+              </button>
+            </div>
           )}
         </div>
         <Table
@@ -137,7 +160,7 @@ export default function EbiDetail() {
           <FormField
             label="Contato do dia"
             value={form.guardian_phone_day}
-            onChange={(e) => setForm({ ...form, guardian_phone_day: e.target.value })}
+            onChange={(e) => setForm({ ...form, guardian_phone_day: maskPhone(e.target.value) })}
             required
           />
           <button className="button" style={{ marginTop: "12px" }} disabled={ebi.status === "ENCERRADO"}>
@@ -151,6 +174,13 @@ export default function EbiDetail() {
         description="Confirma o registro de saida desta crianca?"
         onConfirm={handleCheckout}
         onClose={() => setConfirmId(null)}
+      />
+      <ConfirmModal
+        open={reopenOpen}
+        title="Reabrir EBI"
+        description="Confirma a reabertura deste EBI?"
+        onConfirm={handleReopenEbi}
+        onClose={() => setReopenOpen(false)}
       />
     </div>
   );

@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { get, post, put } from "../api/client.js";
 import FormField from "../components/FormField.jsx";
 import Table from "../components/Table.jsx";
+import { maskPhone } from "../utils/mask.js";
+import { validatePhone } from "../utils/validators.js";
 
 const initialForm = {
   name: "",
@@ -29,6 +31,11 @@ export default function Children() {
 
   async function handleSubmit(event) {
     event.preventDefault();
+    const phoneError = validatePhone(form.guardian_phone);
+    if (phoneError) {
+      alert(phoneError);
+      return;
+    }
     if (editingId) {
       await put(`/children/${editingId}`, form);
     } else {
@@ -44,7 +51,7 @@ export default function Children() {
     setForm({
       name: item.name,
       guardian_name: item.guardian_name,
-      guardian_phone: item.guardian_phone
+      guardian_phone: maskPhone(item.guardian_phone || "")
     });
   }
 
@@ -109,7 +116,7 @@ export default function Children() {
           <FormField
             label="Contato do responsavel"
             value={form.guardian_phone}
-            onChange={(e) => setForm({ ...form, guardian_phone: e.target.value })}
+            onChange={(e) => setForm({ ...form, guardian_phone: maskPhone(e.target.value) })}
             required
           />
           <button className="button" style={{ marginTop: "12px" }}>

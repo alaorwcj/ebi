@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, Query
+from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.core.db import get_db
@@ -7,7 +8,7 @@ from app.models.user import UserRole
 from app.repositories.ebi_repo import get_ebi_by_id, list_ebis
 from app.schemas.ebi import EbiCreate, EbiDetail, EbiList, EbiOut, EbiUpdate
 from app.schemas.presence import PresenceCreate, PresenceOut
-from app.services.ebi_service import add_presence, checkout_presence, close_ebi, create_new_ebi, update_existing_ebi
+from app.services.ebi_service import add_presence, checkout_presence, close_ebi, create_new_ebi, reopen_ebi, update_existing_ebi
 
 router = APIRouter()
 
@@ -69,7 +70,7 @@ def get_ebi_api(
 ):
     ebi = get_ebi_by_id(db, ebi_id)
     if not ebi:
-        return None
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="EBI not found")
     return EbiDetail(
         **_ebi_to_out(ebi).model_dump(),
         presences=[_presence_to_out(p) for p in ebi.presences],
@@ -115,4 +116,15 @@ def close_ebi_api(
     _=Depends(require_role(UserRole.COORDENADORA)),
 ):
     ebi = close_ebi(db, ebi_id)
+    return _ebi_to_out(ebi)
+
+
+@router.post("/{ebi_id}/reopen", response_model=EbiOut)
+def reopen_ebi_api(
+    ebi_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+    _=Depends(require_role(UserRole.COORDENADORA)),
+):
+    ebi = reopen_ebi(db, ebi_id, current_user.id)
     return _ebi_to_out(ebi)

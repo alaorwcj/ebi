@@ -25,6 +25,7 @@ class Ebi(Base, TimestampMixin):
     coordinator = relationship("User", back_populates="coordinated_ebis")
     collaborators = relationship("User", secondary="ebi_colaboradoras")
     presences = relationship("EbiPresence", back_populates="ebi", cascade="all, delete-orphan")
+    audits = relationship("EbiAudit", back_populates="ebi", cascade="all, delete-orphan")
 
 
 Index("ix_ebi_date_group", Ebi.ebi_date, Ebi.group_number)

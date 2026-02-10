@@ -4,17 +4,35 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.models.ebi import Ebi, EbiStatus
+from app.models.ebi_audit import EbiAudit
 from app.models.presence import EbiPresence
+from app.models.user import UserRole
 from app.repositories.child_repo import get_child_by_id
 from app.repositories.ebi_repo import create_ebi, get_ebi_by_id, update_ebi
 from app.repositories.presence_repo import create_presence, get_presence_by_ebi_child, get_presence_by_id, update_presence
 from app.repositories.user_repo import get_user_by_id
 
 
-def create_new_ebi(db: Session, ebi_in) -> Ebi:
-    coordinator = get_user_by_id(db, ebi_in.coordinator_id)
+def _validate_coordinator(db: Session, coordinator_id: int) -> None:
+    coordinator = get_user_by_id(db, coordinator_id)
     if not coordinator:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Coordinator not found")
+    if coordinator.role != UserRole.COORDENADORA:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid coordinator role")
+
+
+def _validate_collaborators(db: Session, collaborator_ids: list[int]) -> list:
+    collaborators = [get_user_by_id(db, uid) for uid in collaborator_ids]
+    if any(item is None for item in collaborators):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid collaborator")
+    for collaborator in collaborators:
+        if collaborator.role != UserRole.COLABORADORA:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid collaborator role")
+    return collaborators
+
+
+def create_new_ebi(db: Session, ebi_in) -> Ebi:
+    _validate_coordinator(db, ebi_in.coordinator_id)
 
     ebi = Ebi(
         ebi_date=ebi_in.ebi_date,
@@ -23,10 +41,8 @@ def create_new_ebi(db: Session, ebi_in) -> Ebi:
         status=EbiStatus.ABERTO,
     )
     if ebi_in.collaborator_ids:
-        collaborators = [get_user_by_id(db, uid) for uid in ebi_in.collaborator_ids]
-        if any(item is None for item in collaborators):
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid collaborator")
-        ebi.collaborators = [item for item in collaborators if item is not None]
+        collaborators = _validate_collaborators(db, ebi_in.collaborator_ids)
+        ebi.collaborators = collaborators
 
     return create_ebi(db, ebi)
 
@@ -41,13 +57,13 @@ def update_existing_ebi(db: Session, ebi_id: int, ebi_in) -> Ebi:
     for field in ["ebi_date", "group_number", "coordinator_id"]:
         value = getattr(ebi_in, field, None)
         if value is not None:
+            if field == "coordinator_id":
+                _validate_coordinator(db, value)
             setattr(ebi, field, value)
 
     if ebi_in.collaborator_ids is not None:
-        collaborators = [get_user_by_id(db, uid) for uid in ebi_in.collaborator_ids]
-        if any(item is None for item in collaborators):
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid collaborator")
-        ebi.collaborators = [item for item in collaborators if item is not None]
+        collaborators = _validate_collaborators(db, ebi_in.collaborator_ids)
+        ebi.collaborators = collaborators
 
     return update_ebi(db, ebi)
 
@@ -106,4 +122,20 @@ def close_ebi(db: Session, ebi_id: int) -> Ebi:
 
     ebi.status = EbiStatus.ENCERRADO
     ebi.finished_at = datetime.now(timezone.utc)
+    return update_ebi(db, ebi)
+
+
+def reopen_ebi(db: Session, ebi_id: int, performed_by: int) -> Ebi:
+    ebi = get_ebi_by_id(db, ebi_id)
+    if not ebi:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="EBI not found")
+
+    if ebi.status == EbiStatus.ABERTO:
+        return ebi
+
+    ebi.status = EbiStatus.ABERTO
+    ebi.finished_at = None
+
+    audit = EbiAudit(ebi_id=ebi.id, action="REOPEN", performed_by=performed_by)
+    db.add(audit)
     return update_ebi(db, ebi)

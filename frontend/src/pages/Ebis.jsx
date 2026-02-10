@@ -90,9 +90,16 @@ export default function Ebis() {
             ebi_date: formatDate(item.ebi_date)
           }))}
           actions={(row) => (
-            <Link className="button secondary" to={`/ebis/${row.id}`}>
-              Abrir
-            </Link>
+            <div className="flex">
+              <Link className="button secondary" to={`/ebis/${row.id}`}>
+                Abrir
+              </Link>
+              {role === "COORDENADORA" && (
+                <Link className="button secondary" to={`/reports/ebi/${row.id}`}>
+                  Relatorio
+                </Link>
+              )}
+            </div>
           )}
         />
         <div className="flex" style={{ marginTop: "12px" }}>
@@ -119,6 +126,7 @@ export default function Ebis() {
               onChange={(e) => setForm({ ...form, ebi_date: e.target.value })}
               required
             />
+            <p className="muted">Formato: DD/MM/AAAA</p>
             <label className="label">Grupo</label>
             <select
               className="input"

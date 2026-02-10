@@ -117,6 +117,12 @@ Backend: http://localhost:8000/docs
 docker compose run --rm backend alembic upgrade head
 ```
 
+## Seed opcional (dados de exemplo)
+
+```bash
+docker compose run --rm backend python -m app.seed
+```
+
 ## Bootstrap do usuario coordenadora
 Se o banco estiver vazio e `ALLOW_BOOTSTRAP=true`:
 
@@ -135,6 +141,7 @@ Depois disso, use o login na tela inicial.
 - Criar EBI (data/grupo/coordenadora/colaboradoras)
 - Registrar presencas e saidas
 - Encerrar EBI apenas quando todas as saidas estiverem registradas
+- Reabrir EBI (opcional) e registrar auditoria
 - Gerar relatorio do EBI
 - Gerar relatorio geral (somente coordenadora)
 
