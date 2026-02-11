@@ -2,6 +2,7 @@ from pydantic import BaseModel
 
 
 class ReportGeneral(BaseModel):
+    people: list[dict]
     total_coordenadoras: int
     total_colaboradoras: int
     by_group: dict[str, int]

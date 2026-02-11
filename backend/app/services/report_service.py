@@ -17,6 +17,12 @@ def get_general_report(db: Session) -> dict:
         select(func.count()).select_from(User).where(User.role == UserRole.COLABORADORA)
     ).scalar_one()
 
+    people_rows = db.execute(select(User.full_name, User.role).order_by(User.full_name.asc())).all()
+    people = [
+        {"full_name": full_name, "role": role.value if hasattr(role, "value") else str(role)}
+        for full_name, role in people_rows
+    ]
+
     by_group = {}
     for group_number in range(1, 5):
         count = db.execute(
@@ -102,6 +108,7 @@ def get_general_report(db: Session) -> dict:
             month_cursor = date(month_cursor.year, month_cursor.month - 1, 1)
 
     return {
+        "people": people,
         "total_coordenadoras": total_coordenadoras,
         "total_colaboradoras": total_colaboradoras,
         "by_group": by_group,
