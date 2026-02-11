@@ -213,6 +213,9 @@ docker compose run --rm -e PYTHONPATH=/app backend python -m app.seed
 ### 9) Acessar a aplicacao
 
 Credenciais do seed:
+- Administrador: admin@ebi.local / admin123
+- Coordenadora: coord@ebi.local / coord123
+- Colaboradora: colab@ebi.local / colab123
 
 ### Observacoes por ambiente
 
@@ -237,6 +240,23 @@ curl -X POST http://localhost:8000/api/v1/auth/bootstrap \
 Depois disso, use o login na tela inicial. (Obs.: o Administrador e criado via seed.)
 
 ## Checklist rapido de validacao
+- Login como Administrador
+- Cadastrar coordenadoras e colaboradoras
+- Cadastrar criancas
+- Criar EBI (data/grupo/coordenadora/colaboradoras)
+- Registrar presencas e saidas
+- Encerrar EBI apenas quando todas as saidas estiverem registradas
+- Reabrir EBI (opcional) e registrar auditoria
+- Gerar relatorio do EBI
+- Gerar relatorio geral (somente coordenadora)
+- Atualizar perfil e anexar documentos obrigatorios
+
+## Modificacoes e adicoes recentes
+
+- Perfil do usuario com dados pessoais e anexos obrigatorios
+- Administrador com menu "Usuarios" para criar/editar coordenadoras e colaboradoras
+- Multiplos responsaveis por crianca
+- PIN de 4 digitos gerado na entrada e exigido na saida
 ## Estrutura do projeto
 
 ```
