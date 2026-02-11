@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+import secrets
 
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
@@ -83,17 +84,19 @@ def add_presence(db: Session, ebi_id: int, presence_in) -> EbiPresence:
     if existing:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Presence already exists")
 
+    pin_code = "".join(secrets.choice("0123456789") for _ in range(4))
     presence = EbiPresence(
         ebi_id=ebi_id,
         child_id=presence_in.child_id,
         guardian_name_day=presence_in.guardian_name_day,
         guardian_phone_day=presence_in.guardian_phone_day,
         entry_at=datetime.now(timezone.utc),
+        pin_code=pin_code,
     )
     return create_presence(db, presence)
 
 
-def checkout_presence(db: Session, presence_id: int) -> EbiPresence:
+def checkout_presence(db: Session, presence_id: int, pin_code: str) -> EbiPresence:
     presence = get_presence_by_id(db, presence_id)
     if not presence:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Presence not found")
@@ -104,6 +107,9 @@ def checkout_presence(db: Session, presence_id: int) -> EbiPresence:
 
     if presence.exit_at:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Already checked out")
+
+    if presence.pin_code != pin_code:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid pin")
 
     presence.exit_at = datetime.now(timezone.utc)
     return update_presence(db, presence)

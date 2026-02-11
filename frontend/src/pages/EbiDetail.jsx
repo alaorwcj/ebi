@@ -4,6 +4,7 @@ import { get, post } from "../api/client.js";
 import FormField from "../components/FormField.jsx";
 import Table from "../components/Table.jsx";
 import ConfirmModal from "../components/ConfirmModal.jsx";
+import Modal from "../components/Modal.jsx";
 import { formatDate, formatDateTime } from "../utils/format.js";
 import { getRole } from "../api/auth.js";
 import { maskPhone } from "../utils/mask.js";
@@ -23,6 +24,9 @@ export default function EbiDetail() {
   });
   const [confirmId, setConfirmId] = useState(null);
   const [reopenOpen, setReopenOpen] = useState(false);
+  const [checkoutPin, setCheckoutPin] = useState("");
+  const [entryPinOpen, setEntryPinOpen] = useState(false);
+  const [entryPinCode, setEntryPinCode] = useState("");
 
   async function load() {
     try {
@@ -35,7 +39,7 @@ export default function EbiDetail() {
 
   async function loadChildren() {
     try {
-      const data = await get("/children?page=1&page_size=200");
+      const data = await get("/children?page=1&page_size=100");
       setChildren(data.items);
     } catch (err) {
       toast.error(err.message || "Erro ao carregar crianças.");
@@ -81,12 +85,16 @@ export default function EbiDetail() {
       return;
     }
     try {
-      await post(`/ebi/${id}/presence`, {
+      const created = await post(`/ebi/${id}/presence`, {
         child_id: Number(form.child_id),
         guardian_name_day: form.guardian_name_day,
         guardian_phone_day: form.guardian_phone_day
       });
       toast.success("Presença registrada com sucesso.");
+      if (created?.pin_code) {
+        setEntryPinCode(created.pin_code);
+        setEntryPinOpen(true);
+      }
       setForm({ child_id: "", guardian_name_day: "", guardian_phone_day: "" });
       load();
     } catch (err) {
@@ -96,9 +104,10 @@ export default function EbiDetail() {
 
   async function handleCheckout() {
     try {
-      await post(`/ebi/presence/${confirmId}/checkout`, {});
+      await post(`/ebi/presence/${confirmId}/checkout`, { pin_code: checkoutPin });
       toast.success("Saída registrada com sucesso.");
       setConfirmId(null);
+      setCheckoutPin("");
       load();
     } catch (err) {
       toast.error(err.message || "Erro ao registrar saída.");
@@ -172,7 +181,10 @@ export default function EbiDetail() {
               type="button"
               className="button secondary"
               disabled={Boolean(row.exit_at) || ebi.status === "ENCERRADO"}
-              onClick={() => setConfirmId(row.id)}
+              onClick={() => {
+                setConfirmId(row.id);
+                setCheckoutPin("");
+              }}
             >
               Registrar saída
             </button>
@@ -232,13 +244,54 @@ export default function EbiDetail() {
           </button>
         </form>
       </div>
-      <ConfirmModal
+      <Modal
         open={Boolean(confirmId)}
-        title="Registrar saída"
-        description="Confirma o registro de saída desta criança?"
-        onConfirm={handleCheckout}
-        onClose={() => setConfirmId(null)}
-      />
+        title="PIN de saída"
+        onClose={() => {
+          setConfirmId(null);
+          setCheckoutPin("");
+        }}
+      >
+        <FormField
+          label="PIN (4 dígitos)"
+          value={checkoutPin}
+          onChange={(e) => setCheckoutPin(e.target.value.replace(/\D/g, "").slice(0, 4))}
+          inputMode="numeric"
+          autoComplete="one-time-code"
+          required
+        />
+        <button
+          type="button"
+          className="button"
+          onClick={handleCheckout}
+          disabled={checkoutPin.length !== 4}
+        >
+          Confirmar saída
+        </button>
+      </Modal>
+      <Modal
+        open={entryPinOpen}
+        title="PIN gerado"
+        onClose={() => {
+          setEntryPinOpen(false);
+          setEntryPinCode("");
+        }}
+      >
+        <p className="muted">Informe este PIN ao responsável para liberar a saída:</p>
+        <div style={{ fontSize: "24px", fontWeight: "700", letterSpacing: "4px" }}>
+          {entryPinCode}
+        </div>
+        <button
+          type="button"
+          className="button secondary"
+          onClick={() => {
+            setEntryPinOpen(false);
+            setEntryPinCode("");
+          }}
+        >
+          Entendi
+        </button>
+      </Modal>
       <ConfirmModal
         open={reopenOpen}
         title="Reabrir EBI"

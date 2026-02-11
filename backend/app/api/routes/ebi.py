@@ -7,7 +7,7 @@ from app.core.deps import get_current_user, require_role
 from app.models.user import UserRole
 from app.repositories.ebi_repo import get_ebi_by_id, list_ebis
 from app.schemas.ebi import EbiCreate, EbiDetail, EbiList, EbiOut, EbiUpdate
-from app.schemas.presence import PresenceCreate, PresenceOut
+from app.schemas.presence import PresenceCheckout, PresenceCreate, PresenceOut
 from app.services.ebi_service import add_presence, checkout_presence, close_ebi, create_new_ebi, reopen_ebi, update_existing_ebi
 
 router = APIRouter()
@@ -26,7 +26,7 @@ def _ebi_to_out(ebi) -> EbiOut:
     )
 
 
-def _presence_to_out(presence) -> PresenceOut:
+def _presence_to_out(presence, include_pin: bool = False) -> PresenceOut:
     return PresenceOut(
         id=presence.id,
         child_id=presence.child_id,
@@ -35,6 +35,7 @@ def _presence_to_out(presence) -> PresenceOut:
         guardian_phone_day=presence.guardian_phone_day,
         entry_at=presence.entry_at,
         exit_at=presence.exit_at,
+        pin_code=presence.pin_code if include_pin else None,
     )
 
 
@@ -96,16 +97,17 @@ def add_presence_api(
     _=Depends(get_current_user),
 ):
     presence = add_presence(db, ebi_id, payload)
-    return _presence_to_out(presence)
+    return _presence_to_out(presence, include_pin=True)
 
 
 @router.post("/presence/{presence_id}/checkout", response_model=PresenceOut)
 def checkout_presence_api(
     presence_id: int,
+    payload: PresenceCheckout,
     db: Session = Depends(get_db),
     _=Depends(get_current_user),
 ):
-    presence = checkout_presence(db, presence_id)
+    presence = checkout_presence(db, presence_id, payload.pin_code)
     return _presence_to_out(presence)
 
 

@@ -9,6 +9,10 @@ class PresenceCreate(BaseModel):
     guardian_phone_day: str = Field(min_length=8, max_length=40)
 
 
+class PresenceCheckout(BaseModel):
+    pin_code: str = Field(min_length=4, max_length=4)
+
+
 class PresenceOut(BaseModel):
     id: int
     child_id: int
@@ -17,6 +21,7 @@ class PresenceOut(BaseModel):
     guardian_phone_day: str
     entry_at: datetime
     exit_at: datetime | None
+    pin_code: str | None = None
 
     class Config:
         from_attributes = True

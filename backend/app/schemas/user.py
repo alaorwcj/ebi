@@ -1,11 +1,11 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, Field
 
 from app.models.user import UserRole
 
 
 class UserBase(BaseModel):
     full_name: str = Field(min_length=2, max_length=200)
-    email: EmailStr
+    email: str = Field(min_length=3, max_length=200)
     phone: str = Field(min_length=8, max_length=40)
     role: UserRole
     group_number: int = Field(ge=1, le=4)
@@ -17,7 +17,7 @@ class UserCreate(UserBase):
 
 class UserUpdate(BaseModel):
     full_name: str | None = Field(default=None, min_length=2, max_length=200)
-    email: EmailStr | None = None
+    email: str | None = Field(default=None, min_length=3, max_length=200)
     phone: str | None = Field(default=None, min_length=8, max_length=40)
     role: UserRole | None = None
     group_number: int | None = Field(default=None, ge=1, le=4)

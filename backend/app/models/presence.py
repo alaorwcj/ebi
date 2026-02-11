@@ -16,6 +16,7 @@ class EbiPresence(Base, TimestampMixin):
     guardian_phone_day: Mapped[str] = mapped_column(String(40), nullable=False)
     entry_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     exit_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    pin_code: Mapped[str] = mapped_column(String(4), nullable=False)
 
     ebi = relationship("Ebi", back_populates="presences")
     child = relationship("Child")
