@@ -12,6 +12,7 @@ from app.repositories.child_repo import get_child_by_id
 from app.repositories.ebi_repo import create_ebi, get_ebi_by_id, update_ebi
 from app.repositories.presence_repo import create_presence, get_presence_by_ebi_child, get_presence_by_id, update_presence
 from app.repositories.user_repo import get_user_by_id
+from app.services.whatsapp_service import send_pin_whatsapp
 
 
 def _validate_coordinator(db: Session, coordinator_id: int) -> None:
@@ -93,7 +94,12 @@ def add_presence(db: Session, ebi_id: int, presence_in) -> EbiPresence:
         entry_at=datetime.now(timezone.utc),
         pin_code=pin_code,
     )
-    return create_presence(db, presence)
+    presence = create_presence(db, presence)
+
+    # Best-effort WhatsApp send (no hard failure)
+    send_pin_whatsapp(presence.guardian_phone_day, presence.child.name, presence.pin_code)
+
+    return presence
 
 
 def checkout_presence(db: Session, presence_id: int, pin_code: str) -> EbiPresence:

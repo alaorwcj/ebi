@@ -1,6 +1,6 @@
 # EBI Vila Paula
 
-Sistema web para controle de colaboradoras, criancas e presencas do EBI.
+Sistema web para controle de usuarios, criancas, presencas e documentos do EBI.
 
 ## Primeira vez
 
@@ -257,6 +257,38 @@ Depois disso, use o login na tela inicial. (Obs.: o Administrador e criado via s
 - Administrador com menu "Usuarios" para criar/editar coordenadoras e colaboradoras
 - Multiplos responsaveis por crianca
 - PIN de 4 digitos gerado na entrada e exigido na saida
+- Preparacao para envio do PIN via WhatsApp (Meta Cloud API)
+
+## WhatsApp (Meta Cloud API)
+
+O envio do PIN via WhatsApp esta preparado, mas desativado por padrao.
+Para ativar, configure as variaveis no `.env` e aprove um template na Meta.
+
+Requisitos:
+- Numero WhatsApp Business verificado
+- Template aprovado (mensagem fora da janela de 24h exige template)
+- Consentimento do responsavel para receber mensagens
+
+Variaveis:
+- WHATSAPP_ENABLED=true
+- WHATSAPP_API_VERSION=v19.0
+- WHATSAPP_PHONE_NUMBER_ID=<id_do_numero>
+- WHATSAPP_ACCESS_TOKEN=<token>
+- WHATSAPP_TEMPLATE_NAME=<nome_do_template>
+- WHATSAPP_TEMPLATE_LANGUAGE=pt_BR
+- WHATSAPP_DEFAULT_COUNTRY_CODE=55
+
+Formato do telefone:
+- Ideal: E.164 (ex: +5511999999999)
+- Se vier sem +, o sistema adiciona o codigo do pais configurado
+
+Template sugerido (body, 2 parametros):
+1) Nome da crianca
+2) PIN de 4 digitos
+
+Fluxo:
+- Registro de entrada gera PIN e envia via WhatsApp (best-effort)
+- Se o envio falhar, o fluxo da entrada continua normalmente
 ## Estrutura do projeto
 
 ```

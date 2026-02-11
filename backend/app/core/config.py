@@ -19,6 +19,15 @@ class Settings(BaseSettings):
 
     allow_bootstrap: bool = True
 
+    # WhatsApp (Meta Cloud API)
+    whatsapp_enabled: bool = False
+    whatsapp_api_version: str = "v19.0"
+    whatsapp_phone_number_id: str = ""
+    whatsapp_access_token: str = ""
+    whatsapp_template_name: str = ""
+    whatsapp_template_language: str = "pt_BR"
+    whatsapp_default_country_code: str = "55"
+
     class Config:
         env_file = ".env"
         env_prefix = ""
