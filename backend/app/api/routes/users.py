@@ -18,7 +18,7 @@ def list_users_api(
     page: int = Query(1, ge=1),
     page_size: int = Query(10, ge=1, le=100),
     db: Session = Depends(get_db),
-    _=Depends(require_role(UserRole.COORDENADORA)),
+    _=Depends(require_role(UserRole.ADMINISTRADOR)),
 ):
     items, total = list_users(db, search, page, page_size)
     return UserList(items=items, total=total, page=page, page_size=page_size)
@@ -28,7 +28,7 @@ def list_users_api(
 def create_user_api(
     payload: UserCreate,
     db: Session = Depends(get_db),
-    _=Depends(require_role(UserRole.COORDENADORA)),
+    _=Depends(require_role(UserRole.ADMINISTRADOR)),
 ):
     return create_new_user(db, payload)
 
@@ -37,7 +37,7 @@ def create_user_api(
 def get_user_api(
     user_id: int,
     db: Session = Depends(get_db),
-    _=Depends(require_role(UserRole.COORDENADORA)),
+    _=Depends(require_role(UserRole.ADMINISTRADOR)),
 ):
     user = get_user_by_id(db, user_id)
     if not user:
@@ -50,6 +50,6 @@ def update_user_api(
     user_id: int,
     payload: UserUpdate,
     db: Session = Depends(get_db),
-    _=Depends(require_role(UserRole.COORDENADORA)),
+    _=Depends(require_role(UserRole.ADMINISTRADOR)),
 ):
     return update_existing_user(db, user_id, payload)

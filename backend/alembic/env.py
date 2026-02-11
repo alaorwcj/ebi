@@ -6,7 +6,7 @@ from alembic import context
 
 from app.core.config import settings
 from app.models.base import Base
-from app.models import association, child, ebi, ebi_audit, presence, user
+from app.models import association, child, ebi, ebi_audit, guardian, presence, user
 
 config = context.config
 config.set_main_option("sqlalchemy.url", settings.database_url)

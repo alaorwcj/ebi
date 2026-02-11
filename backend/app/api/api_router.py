@@ -1,10 +1,11 @@
 from fastapi import APIRouter
 
-from app.api.routes import auth, children, ebi, health, reports, users
+from app.api.routes import auth, children, ebi, health, profile, reports, users
 
 api_router = APIRouter()
 api_router.include_router(health.router, tags=["health"])
 api_router.include_router(auth.router, prefix="/auth", tags=["auth"])
+api_router.include_router(profile.router, prefix="/profile", tags=["profile"])
 api_router.include_router(users.router, prefix="/users", tags=["users"])
 api_router.include_router(children.router, prefix="/children", tags=["children"])
 api_router.include_router(ebi.router, prefix="/ebi", tags=["ebi"])

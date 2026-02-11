@@ -10,7 +10,7 @@ const initialForm = {
   full_name: "",
   email: "",
   phone: "",
-  role: "COLABORADORA",
+  role: "COORDENADORA",
   group_number: 1,
   password: ""
 };
@@ -29,7 +29,7 @@ export default function Users() {
       setItems(data.items);
       setTotal(data.total);
     } catch (err) {
-      toast.error(err.message || "Erro ao carregar colaboradoras.");
+      toast.error(err.message || "Erro ao carregar usuários.");
     }
   }
 
@@ -61,10 +61,10 @@ export default function Users() {
     try {
       if (editingId) {
         await put(`/users/${editingId}`, form);
-        toast.success("Colaboradora atualizada com sucesso.");
+        toast.success("Usuário atualizado com sucesso.");
       } else {
         await post("/users", form);
-        toast.success("Colaboradora cadastrada com sucesso.");
+        toast.success("Usuário cadastrado com sucesso.");
       }
       setForm(initialForm);
       setEditingId(null);
@@ -90,7 +90,7 @@ export default function Users() {
     <div className="grid grid-2">
       <div className="card">
         <div className="flex-between">
-          <h2 className="page-title">Colaboradoras</h2>
+          <h2 className="page-title">Usuários</h2>
           <input
             className="input"
             style={{ maxWidth: "180px" }}
@@ -177,6 +177,7 @@ export default function Users() {
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
             type="password"
+            autoComplete="new-password"
             minLength={8}
             required={!editingId}
           />

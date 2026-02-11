@@ -17,6 +17,7 @@ export default function EbiDetail() {
   const [children, setChildren] = useState([]);
   const [form, setForm] = useState({
     child_id: "",
+    guardian_id: "",
     guardian_name_day: "",
     guardian_phone_day: ""
   });
@@ -49,10 +50,26 @@ export default function EbiDetail() {
   function handleSelectChild(childId) {
     const child = children.find((item) => item.id === Number(childId));
     if (!child) return;
+    const guardians = child.guardians || [];
+    const primary = guardians.length > 0 ? guardians[0] : null;
     setForm({
       child_id: childId,
-      guardian_name_day: child.guardian_name,
-      guardian_phone_day: maskPhone(child.guardian_phone || "")
+      guardian_id: primary ? String(primary.id) : "",
+      guardian_name_day: primary ? primary.name : "",
+      guardian_phone_day: primary ? maskPhone(primary.phone || "") : ""
+    });
+  }
+
+  function handleSelectGuardian(guardianId) {
+    const child = children.find((item) => item.id === Number(form.child_id));
+    if (!child) return;
+    const guardian = (child.guardians || []).find((item) => item.id === Number(guardianId));
+    if (!guardian) return;
+    setForm({
+      ...form,
+      guardian_id: guardianId,
+      guardian_name_day: guardian.name,
+      guardian_phone_day: maskPhone(guardian.phone || "")
     });
   }
 
@@ -181,6 +198,22 @@ export default function EbiDetail() {
                 {child.name}
               </option>
             ))}
+          </select>
+          <label className="label" style={{ marginTop: "12px" }}>Responsavel</label>
+          <select
+            className="input"
+            value={form.guardian_id}
+            onChange={(e) => handleSelectGuardian(e.target.value)}
+            disabled={!form.child_id}
+          >
+            <option value="">Selecione</option>
+            {(children.find((item) => item.id === Number(form.child_id))?.guardians || []).map(
+              (guardian) => (
+                <option key={guardian.id} value={guardian.id}>
+                  {guardian.name}
+                </option>
+              )
+            )}
           </select>
           <FormField
             label="Responsável do dia"

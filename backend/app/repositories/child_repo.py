@@ -1,4 +1,5 @@
 from sqlalchemy import func, select
+from sqlalchemy.orm import selectinload
 from sqlalchemy.orm import Session
 
 from app.models.child import Child
@@ -9,7 +10,7 @@ def get_child_by_id(db: Session, child_id: int) -> Child | None:
 
 
 def list_children(db: Session, search: str | None, page: int, page_size: int) -> tuple[list[Child], int]:
-    stmt = select(Child)
+    stmt = select(Child).options(selectinload(Child.guardians))
     count_stmt = select(func.count()).select_from(Child)
 
     if search:

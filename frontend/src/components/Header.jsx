@@ -6,7 +6,11 @@ import { Button } from "@/components/ui/button";
 export default function Header() {
   const navigate = useNavigate();
   const role = getRole();
-  const roleLabel = role === "COORDENADORA" ? "Coordenadora" : "Colaboradora";
+  const roleLabel = role === "ADMINISTRADOR"
+    ? "Administrador"
+    : role === "COORDENADORA"
+      ? "Coordenadora"
+      : "Colaboradora";
 
   function handleLogout() {
     clearAuth();

@@ -8,8 +8,7 @@ import { toast } from "sonner";
 
 const initialForm = {
   name: "",
-  guardian_name: "",
-  guardian_phone: ""
+  guardians: [{ name: "", phone: "" }]
 };
 
 export default function Children() {
@@ -36,10 +35,12 @@ export default function Children() {
 
   async function handleSubmit(event) {
     event.preventDefault();
-    const phoneError = validatePhone(form.guardian_phone);
-    if (phoneError) {
-      toast.error(phoneError);
-      return;
+    for (const guardian of form.guardians) {
+      const phoneError = validatePhone(guardian.phone);
+      if (phoneError) {
+        toast.error(phoneError);
+        return;
+      }
     }
     try {
       if (editingId) {
@@ -61,8 +62,33 @@ export default function Children() {
     setEditingId(item.id);
     setForm({
       name: item.name,
-      guardian_name: item.guardian_name,
-      guardian_phone: maskPhone(item.guardian_phone || "")
+      guardians: (item.guardians || []).map((guardian) => ({
+        name: guardian.name,
+        phone: maskPhone(guardian.phone || "")
+      }))
+    });
+  }
+
+  function handleGuardianChange(index, field, value) {
+    const guardians = form.guardians.map((guardian, i) => {
+      if (i !== index) return guardian;
+      return { ...guardian, [field]: value };
+    });
+    setForm({ ...form, guardians });
+  }
+
+  function handleAddGuardian() {
+    setForm({ ...form, guardians: [...form.guardians, { name: "", phone: "" }] });
+  }
+
+  function handleRemoveGuardian(index) {
+    if (form.guardians.length === 1) {
+      toast.error("Informe ao menos um responsavel.");
+      return;
+    }
+    setForm({
+      ...form,
+      guardians: form.guardians.filter((_, i) => i !== index)
     });
   }
 
@@ -89,7 +115,14 @@ export default function Children() {
             { key: "guardian_name", label: "Responsavel" },
             { key: "guardian_phone", label: "Contato" }
           ]}
-          rows={items}
+          rows={items.map((item) => {
+            const primary = item.guardians && item.guardians.length > 0 ? item.guardians[0] : null;
+            return {
+              ...item,
+              guardian_name: primary ? primary.name : "",
+              guardian_phone: primary ? primary.phone : ""
+            };
+          })}
           actions={(row) => (
             <button className="button secondary" onClick={() => handleEdit(row)}>
               Editar
@@ -119,18 +152,37 @@ export default function Children() {
             onChange={(e) => setForm({ ...form, name: e.target.value })}
             required
           />
-          <FormField
-            label="Nome do responsavel"
-            value={form.guardian_name}
-            onChange={(e) => setForm({ ...form, guardian_name: e.target.value })}
-            required
-          />
-          <FormField
-            label="Contato do responsavel"
-            value={form.guardian_phone}
-            onChange={(e) => setForm({ ...form, guardian_phone: maskPhone(e.target.value) })}
-            required
-          />
+          <div className="card" style={{ marginTop: "12px" }}>
+            <div className="flex-between">
+              <strong>Responsaveis</strong>
+              <button type="button" className="button secondary" onClick={handleAddGuardian}>
+                Adicionar responsavel
+              </button>
+            </div>
+            {form.guardians.map((guardian, index) => (
+              <div key={`guardian-${index}`} style={{ marginTop: "12px" }}>
+                <FormField
+                  label={`Nome do responsavel ${index + 1}`}
+                  value={guardian.name}
+                  onChange={(e) => handleGuardianChange(index, "name", e.target.value)}
+                  required
+                />
+                <FormField
+                  label={`Contato do responsavel ${index + 1}`}
+                  value={guardian.phone}
+                  onChange={(e) => handleGuardianChange(index, "phone", maskPhone(e.target.value))}
+                  required
+                />
+                <button
+                  type="button"
+                  className="button danger"
+                  onClick={() => handleRemoveGuardian(index)}
+                >
+                  Remover
+                </button>
+              </div>
+            ))}
+          </div>
           <button className="button" style={{ marginTop: "12px" }}>
             {editingId ? "Salvar" : "Cadastrar"}
           </button>
