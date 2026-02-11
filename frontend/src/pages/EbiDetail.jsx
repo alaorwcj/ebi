@@ -8,6 +8,7 @@ import { formatDate, formatDateTime } from "../utils/format.js";
 import { getRole } from "../api/auth.js";
 import { maskPhone } from "../utils/mask.js";
 import { validatePhone } from "../utils/validators.js";
+import { toast } from "sonner";
 
 export default function EbiDetail() {
   const { id } = useParams();
@@ -23,13 +24,21 @@ export default function EbiDetail() {
   const [reopenOpen, setReopenOpen] = useState(false);
 
   async function load() {
-    const data = await get(`/ebi/${id}`);
-    setEbi(data);
+    try {
+      const data = await get(`/ebi/${id}`);
+      setEbi(data);
+    } catch (err) {
+      toast.error(err.message || "Erro ao carregar EBI.");
+    }
   }
 
   async function loadChildren() {
-    const data = await get("/children?page=1&page_size=200");
-    setChildren(data.items);
+    try {
+      const data = await get("/children?page=1&page_size=200");
+      setChildren(data.items);
+    } catch (err) {
+      toast.error(err.message || "Erro ao carregar crianças.");
+    }
   }
 
   useEffect(() => {
@@ -51,33 +60,53 @@ export default function EbiDetail() {
     event.preventDefault();
     const phoneError = validatePhone(form.guardian_phone_day);
     if (phoneError) {
-      alert(phoneError);
+      toast.error(phoneError);
       return;
     }
-    await post(`/ebi/${id}/presence`, {
-      child_id: Number(form.child_id),
-      guardian_name_day: form.guardian_name_day,
-      guardian_phone_day: form.guardian_phone_day
-    });
-    setForm({ child_id: "", guardian_name_day: "", guardian_phone_day: "" });
-    load();
+    try {
+      await post(`/ebi/${id}/presence`, {
+        child_id: Number(form.child_id),
+        guardian_name_day: form.guardian_name_day,
+        guardian_phone_day: form.guardian_phone_day
+      });
+      toast.success("Presença registrada com sucesso.");
+      setForm({ child_id: "", guardian_name_day: "", guardian_phone_day: "" });
+      load();
+    } catch (err) {
+      toast.error(err.message || "Erro ao registrar presença.");
+    }
   }
 
   async function handleCheckout() {
-    await post(`/ebi/presence/${confirmId}/checkout`, {});
-    setConfirmId(null);
-    load();
+    try {
+      await post(`/ebi/presence/${confirmId}/checkout`, {});
+      toast.success("Saída registrada com sucesso.");
+      setConfirmId(null);
+      load();
+    } catch (err) {
+      toast.error(err.message || "Erro ao registrar saída.");
+    }
   }
 
   async function handleCloseEbi() {
-    await post(`/ebi/${id}/close`, {});
-    load();
+    try {
+      await post(`/ebi/${id}/close`, {});
+      toast.success("EBI encerrado com sucesso.");
+      load();
+    } catch (err) {
+      toast.error(err.message || "Erro ao encerrar EBI.");
+    }
   }
 
   async function handleReopenEbi() {
-    await post(`/ebi/${id}/reopen`, {});
-    setReopenOpen(false);
-    load();
+    try {
+      await post(`/ebi/${id}/reopen`, {});
+      toast.success("EBI reaberto com sucesso.");
+      setReopenOpen(false);
+      load();
+    } catch (err) {
+      toast.error(err.message || "Erro ao reabrir EBI.");
+    }
   }
 
   if (!ebi) return <div className="card">Carregando...</div>;
@@ -95,10 +124,11 @@ export default function EbiDetail() {
           </div>
           {role === "COORDENADORA" && (
             <div className="flex">
-              <button className="button" disabled={!allClosed || ebi.status === "ENCERRADO"} onClick={handleCloseEbi}>
+              <button type="button" className="button danger" disabled={!allClosed || ebi.status === "ENCERRADO"} onClick={handleCloseEbi}>
                 Encerrar EBI
               </button>
               <button
+                type="button"
                 className="button secondary"
                 disabled={ebi.status !== "ENCERRADO"}
                 onClick={() => setReopenOpen(true)}
@@ -110,10 +140,10 @@ export default function EbiDetail() {
         </div>
         <Table
           columns={[
-            { key: "child_name", label: "Crianca" },
-            { key: "guardian_name_day", label: "Responsavel" },
+            { key: "child_name", label: "Criança" },
+            { key: "guardian_name_day", label: "Responsável" },
             { key: "entry_at", label: "Entrada" },
-            { key: "exit_at", label: "Saida" }
+            { key: "exit_at", label: "Saída" }
           ]}
           rows={ebi.presences.map((item) => ({
             ...item,
@@ -122,22 +152,23 @@ export default function EbiDetail() {
           }))}
           actions={(row) => (
             <button
+              type="button"
               className="button secondary"
               disabled={Boolean(row.exit_at) || ebi.status === "ENCERRADO"}
               onClick={() => setConfirmId(row.id)}
             >
-              Registrar saida
+              Registrar saída
             </button>
           )}
         />
         <div style={{ marginTop: "12px" }}>
-          <Link className="button secondary" to={`/reports/ebi/${id}`}>Relatorio do EBI</Link>
+          <Link className="button secondary" to={`/reports/ebi/${id}`}>Relatório do EBI</Link>
         </div>
       </div>
       <div className="card">
-        <h3>Registrar Presenca</h3>
+        <h3>Registrar presença</h3>
         <form onSubmit={handleAddPresence}>
-          <label className="label">Crianca</label>
+          <label className="label">Criança</label>
           <select
             className="input"
             value={form.child_id}
@@ -152,7 +183,7 @@ export default function EbiDetail() {
             ))}
           </select>
           <FormField
-            label="Responsavel do dia"
+            label="Responsável do dia"
             value={form.guardian_name_day}
             onChange={(e) => setForm({ ...form, guardian_name_day: e.target.value })}
             required
@@ -163,15 +194,15 @@ export default function EbiDetail() {
             onChange={(e) => setForm({ ...form, guardian_phone_day: maskPhone(e.target.value) })}
             required
           />
-          <button className="button" style={{ marginTop: "12px" }} disabled={ebi.status === "ENCERRADO"}>
-            Adicionar presenca
+          <button type="submit" className="button" style={{ marginTop: "12px" }} disabled={ebi.status === "ENCERRADO"}>
+            Registrar presença
           </button>
         </form>
       </div>
       <ConfirmModal
         open={Boolean(confirmId)}
-        title="Registrar saida"
-        description="Confirma o registro de saida desta crianca?"
+        title="Registrar saída"
+        description="Confirma o registro de saída desta criança?"
         onConfirm={handleCheckout}
         onClose={() => setConfirmId(null)}
       />

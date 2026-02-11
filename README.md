@@ -2,6 +2,33 @@
 
 Sistema web para controle de colaboradoras, criancas e presencas do EBI.
 
+## Primeira vez
+
+Depois de clonar ou dar pull no repositório:
+
+1. **Criar o arquivo `.env`**  
+   Na raiz do projeto: `cp .env.example .env`  
+   (O `.env` não é versionado; use o `.env.example` como modelo.)
+
+**Quem usa Docker:**
+
+2. **Subir tudo**  
+   `docker compose up --build`  
+   - Frontend: http://localhost:5173  
+   - Backend: http://localhost:8000/docs  
+
+3. **Rodar as migrations**  
+   `docker compose run --rm backend alembic upgrade head`
+
+4. **(Opcional)** Dados de exemplo:  
+   `docker compose run --rm backend python -m app.seed`
+
+5. **(Opcional)** Primeira coordenadora: ver seção "Bootstrap do usuario coordenadora" abaixo.
+
+**Quem não usa Docker:** ver seção [Rodando sem Docker](#rodando-sem-docker) abaixo.
+
+---
+
 ## Requisitos Sistema EBI Vila Paula
 
 1. Cadastro de Colaboradoras
@@ -68,10 +95,56 @@ Para essa conta considerar:
 - e. Grafico de barras com a quantidade de presenca dos ultimos 3 meses
 - f. Grafico de media de presenca dos ultimos 12 meses;
 
+## Rodando sem Docker
+
+Requisitos na máquina: **Python 3.11+**, **Node.js 20+**, **PostgreSQL** (rodando localmente).
+
+1. **PostgreSQL**  
+   Crie usuário e banco (veja [Configurar Postgres local](#configurar-postgres-local)).
+
+2. **Arquivo `.env` na raiz**  
+   `cp .env.example .env`  
+   Para rodar sem Docker, use no `.env`:  
+   `DB_HOST=localhost` (em vez de `db` ou `host.docker.internal`).
+
+3. **Backend (na raiz do projeto)**  
+   ```bash
+   cd backend
+   python -m venv .venv
+   source .venv/bin/activate
+   pip install -r requirements.txt
+   cd ..
+   PYTHONPATH=backend uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+   ```  
+   O backend usa o `.env` da raiz (por isso o `cd ..` antes do uvicorn).
+
+4. **Migrations (em outro terminal)**  
+   Na raiz do projeto, com o venv do backend ativado e o `.env` na raiz:  
+   ```bash
+   cd backend
+   source .venv/bin/activate
+   pip install -r requirements.txt
+   cd ..
+   PYTHONPATH=backend alembic -c backend/alembic.ini upgrade head
+   ```  
+   Assim o Alembic usa o `.env` da raiz. Se preferir, copie o `.env` para `backend/.env` e rode `cd backend && alembic upgrade head`.
+
+5. **Frontend (em outro terminal)**  
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```  
+   Acesse: http://localhost:5173
+
+6. **(Opcional)** Seed: `cd backend && source .venv/bin/activate && python -m app.seed`  
+7. **(Opcional)** Primeira coordenadora: ver "Bootstrap do usuario coordenadora".
+
+---
+
 ## Requisitos
-- Docker + Docker Compose
-- PostgreSQL local (fora do Docker)
-- Node.js opcional para rodar frontend sem Docker
+- Docker + Docker Compose (ou Python, Node e PostgreSQL para rodar sem Docker)
+- PostgreSQL (local ou no container)
 
 ## Configurar Postgres local
 1) Crie usuario e banco:

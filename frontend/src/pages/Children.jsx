@@ -4,6 +4,7 @@ import FormField from "../components/FormField.jsx";
 import Table from "../components/Table.jsx";
 import { maskPhone } from "../utils/mask.js";
 import { validatePhone } from "../utils/validators.js";
+import { toast } from "sonner";
 
 const initialForm = {
   name: "",
@@ -20,9 +21,13 @@ export default function Children() {
   const [total, setTotal] = useState(0);
 
   async function load() {
-    const data = await get(`/children?search=${encodeURIComponent(search)}&page=${page}`);
-    setItems(data.items);
-    setTotal(data.total);
+    try {
+      const data = await get(`/children?search=${encodeURIComponent(search)}&page=${page}`);
+      setItems(data.items);
+      setTotal(data.total);
+    } catch (err) {
+      toast.error(err.message || "Erro ao carregar crianças.");
+    }
   }
 
   useEffect(() => {
@@ -33,17 +38,23 @@ export default function Children() {
     event.preventDefault();
     const phoneError = validatePhone(form.guardian_phone);
     if (phoneError) {
-      alert(phoneError);
+      toast.error(phoneError);
       return;
     }
-    if (editingId) {
-      await put(`/children/${editingId}`, form);
-    } else {
-      await post("/children", form);
+    try {
+      if (editingId) {
+        await put(`/children/${editingId}`, form);
+        toast.success("Criança atualizada com sucesso.");
+      } else {
+        await post("/children", form);
+        toast.success("Criança cadastrada com sucesso.");
+      }
+      setForm(initialForm);
+      setEditingId(null);
+      load();
+    } catch (err) {
+      toast.error(err.message || "Erro ao salvar.");
     }
-    setForm(initialForm);
-    setEditingId(null);
-    load();
   }
 
   function handleEdit(item) {
@@ -59,7 +70,7 @@ export default function Children() {
     <div className="grid grid-2">
       <div className="card">
         <div className="flex-between">
-          <h3>Criancas</h3>
+          <h2 className="page-title">Crianças</h2>
           <input
             className="input"
             style={{ maxWidth: "180px" }}
@@ -86,15 +97,16 @@ export default function Children() {
           )}
         />
         <div className="flex" style={{ marginTop: "12px" }}>
-          <button className="button secondary" onClick={() => setPage(Math.max(1, page - 1))}>
+          <button type="button" className="button secondary" onClick={() => setPage(Math.max(1, page - 1))}>
             Anterior
           </button>
           <button
+            type="button"
             className="button secondary"
             onClick={() => setPage(page + 1)}
             disabled={page * 10 >= total}
           >
-            Proxima
+            Próxima
           </button>
         </div>
       </div>

@@ -5,6 +5,7 @@ import FormField from "../components/FormField.jsx";
 import Table from "../components/Table.jsx";
 import { formatDate } from "../utils/format.js";
 import { getRole } from "../api/auth.js";
+import { toast } from "sonner";
 
 const initialForm = {
   ebi_date: "",
@@ -23,14 +24,22 @@ export default function Ebis() {
   const [search, setSearch] = useState("");
 
   async function load() {
-    const data = await get(`/ebi?search=${encodeURIComponent(search)}&page=${page}`);
-    setItems(data.items);
-    setTotal(data.total);
+    try {
+      const data = await get(`/ebi?search=${encodeURIComponent(search)}&page=${page}`);
+      setItems(data.items);
+      setTotal(data.total);
+    } catch (err) {
+      toast.error(err.message || "Erro ao carregar EBIs.");
+    }
   }
 
   async function loadUsers() {
-    const data = await get("/users?page=1&page_size=100");
-    setUsers(data.items);
+    try {
+      const data = await get("/users?page=1&page_size=100");
+      setUsers(data.items);
+    } catch (err) {
+      toast.error(err.message || "Erro ao carregar colaboradoras.");
+    }
   }
 
   useEffect(() => {
@@ -42,14 +51,19 @@ export default function Ebis() {
 
   async function handleSubmit(event) {
     event.preventDefault();
-    const payload = {
-      ...form,
-      coordinator_id: Number(form.coordinator_id),
-      collaborator_ids: form.collaborator_ids.map(Number)
-    };
-    await post("/ebi", payload);
-    setForm(initialForm);
-    load();
+    try {
+      const payload = {
+        ...form,
+        coordinator_id: Number(form.coordinator_id),
+        collaborator_ids: form.collaborator_ids.map(Number)
+      };
+      await post("/ebi", payload);
+      toast.success("EBI criado com sucesso.");
+      setForm(initialForm);
+      load();
+    } catch (err) {
+      toast.error(err.message || "Erro ao criar EBI.");
+    }
   }
 
   function handleCollaborators(value) {
@@ -61,7 +75,7 @@ export default function Ebis() {
     <div className="grid grid-2">
       <div className="card">
         <div className="flex-between">
-          <h3>EBIs</h3>
+          <h2 className="page-title">EBIs</h2>
           <div className="flex">
             <input
               className="input"
@@ -103,15 +117,16 @@ export default function Ebis() {
           )}
         />
         <div className="flex" style={{ marginTop: "12px" }}>
-          <button className="button secondary" onClick={() => setPage(Math.max(1, page - 1))}>
+          <button type="button" className="button secondary" onClick={() => setPage(Math.max(1, page - 1))}>
             Anterior
           </button>
           <button
+            type="button"
             className="button secondary"
             onClick={() => setPage(page + 1)}
             disabled={page * 10 >= total}
           >
-            Proxima
+            Próxima
           </button>
         </div>
       </div>
@@ -169,7 +184,7 @@ export default function Ebis() {
                   </option>
                 ))}
             </select>
-            <button className="button" style={{ marginTop: "12px" }}>Criar</button>
+            <button type="submit" className="button" style={{ marginTop: "12px" }}>Criar</button>
           </form>
         </div>
       )}

@@ -13,7 +13,8 @@ COPY alembic /app/alembic
 COPY alembic.ini /app/alembic.ini
 
 ENV APP_HOST=0.0.0.0 \
-    APP_PORT=8000
+    APP_PORT=8000 \
+    PYTHONPATH=/app
 
 EXPOSE 8000
 

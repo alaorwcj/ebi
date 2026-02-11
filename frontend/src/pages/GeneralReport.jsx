@@ -12,6 +12,7 @@ import {
 } from "chart.js";
 import { get } from "../api/client.js";
 import ChartCard from "../components/ChartCard.jsx";
+import { toast } from "sonner";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, PointElement, LineElement, Tooltip, Legend);
 
@@ -19,55 +20,83 @@ export default function GeneralReport() {
   const [report, setReport] = useState(null);
 
   useEffect(() => {
-    get("/reports/general").then(setReport);
+    get("/reports/general")
+      .then(setReport)
+      .catch((err) => toast.error(err.message || "Erro ao carregar relatório."));
   }, []);
 
   if (!report) return <div className="card">Carregando...</div>;
 
-  const last3Labels = ["-2 meses", "-1 mes", "Atual"];
-  const last12Labels = Array.from({ length: 12 }).map((_, index) => `${12 - index}m`);
+  const last3Labels = ["Há 2 meses", "Mês passado", "Este mês"];
+  const last12Labels = Array.from({ length: 12 }, (_, i) => `${12 - i}º mês`).reverse();
 
   return (
-    <div className="grid grid-2">
-      <div className="card">
-        <h3>Resumo Geral</h3>
-        <p>Total coordenadoras: {report.total_coordenadoras}</p>
-        <p>Total colaboradoras: {report.total_colaboradoras}</p>
-        <p>Grupos: {JSON.stringify(report.by_group)}</p>
-        <p>Media mensal: {report.average_presence_month.toFixed(2)}</p>
-        <p>Media anual: {report.average_presence_year.toFixed(2)}</p>
+    <div className="report-general">
+      <h2 className="page-title">Relatório Geral</h2>
+      <div className="report-cards">
+        <div className="report-card">
+          <span className="report-card-value">{report.total_coordenadoras}</span>
+          <span className="report-card-label">Coordenadoras</span>
+        </div>
+        <div className="report-card">
+          <span className="report-card-value">{report.total_colaboradoras}</span>
+          <span className="report-card-label">Colaboradoras</span>
+        </div>
+        <div className="report-card">
+          <span className="report-card-value">{report.average_presence_month.toFixed(1)}</span>
+          <span className="report-card-label">Média mensal (presenças)</span>
+        </div>
+        <div className="report-card">
+          <span className="report-card-value">{report.average_presence_year.toFixed(1)}</span>
+          <span className="report-card-label">Média anual (presenças)</span>
+        </div>
       </div>
-      <ChartCard title="Presencas nos ultimos 3 meses">
-        <Bar
-          data={{
-            labels: last3Labels,
-            datasets: [
-              {
-                label: "Presencas",
-                data: report.last_3_months_counts,
-                backgroundColor: "#1f6feb"
-              }
-            ]
-          }}
-          options={{ responsive: true }}
-        />
-      </ChartCard>
-      <ChartCard title="Media de presencas (12 meses)">
-        <Line
-          data={{
-            labels: last12Labels,
-            datasets: [
-              {
-                label: "Media",
-                data: report.last_12_months_avg,
-                borderColor: "#b42318",
-                backgroundColor: "rgba(180, 35, 24, 0.2)"
-              }
-            ]
-          }}
-          options={{ responsive: true }}
-        />
-      </ChartCard>
+      {report.by_group && Object.keys(report.by_group).length > 0 && (
+        <div className="card">
+          <h3>Presenças por grupo</h3>
+          <div className="report-by-group">
+            {Object.entries(report.by_group).map(([group, count]) => (
+              <div key={group} className="report-by-group-item">
+                <strong>Grupo {group}</strong>
+                <span>{count} presenças</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      <div className="report-charts grid grid-2">
+        <ChartCard title="Presenças nos últimos 3 meses">
+          <Bar
+            data={{
+              labels: last3Labels,
+              datasets: [
+                {
+                  label: "Presenças",
+                  data: report.last_3_months_counts,
+                  backgroundColor: "var(--accent)"
+                }
+              ]
+            }}
+            options={{ responsive: true, maintainAspectRatio: true }}
+          />
+        </ChartCard>
+        <ChartCard title="Média de presenças (últimos 12 meses)">
+          <Line
+            data={{
+              labels: last12Labels,
+              datasets: [
+                {
+                  label: "Média",
+                  data: report.last_12_months_avg,
+                  borderColor: "var(--accent)",
+                  backgroundColor: "rgba(52, 114, 247, 0.1)"
+                }
+              ]
+            }}
+            options={{ responsive: true, maintainAspectRatio: true }}
+          />
+        </ChartCard>
+      </div>
     </div>
   );
 }

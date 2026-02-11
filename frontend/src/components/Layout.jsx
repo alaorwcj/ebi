@@ -1,32 +1,26 @@
-import { Link, Outlet, useNavigate } from "react-router-dom";
-import { clearAuth, getRole } from "../api/auth.js";
+import { useState } from "react";
+import { Outlet } from "react-router-dom";
+import Sidebar from "./Sidebar.jsx";
+import Header from "./Header.jsx";
 
 export default function Layout() {
-  const navigate = useNavigate();
-  const role = getRole();
-
-  function handleLogout() {
-    clearAuth();
-    navigate("/login");
-  }
+  const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div>
-      <header>
-        <div>
-          <strong>EBI Vila Paula</strong>
+    <div className="app-layout">
+      <Sidebar
+        collapsed={collapsed}
+        onToggleCollapse={() => setCollapsed((c) => !c)}
+        mobileOpen={mobileOpen}
+        onMobileToggle={() => setMobileOpen((o) => !o)}
+      />
+      <div className="app-main">
+        <Header />
+        <div className="app-content">
+          <Outlet />
         </div>
-        <nav>
-          <Link to="/ebis">EBIs</Link>
-          <Link to="/children">Criancas</Link>
-          {role === "COORDENADORA" && <Link to="/users">Colaboradoras</Link>}
-          {role === "COORDENADORA" && <Link to="/reports/general">Relatorio Geral</Link>}
-        </nav>
-        <button className="button secondary" onClick={handleLogout}>Sair</button>
-      </header>
-      <main>
-        <Outlet />
-      </main>
+      </div>
     </div>
   );
 }

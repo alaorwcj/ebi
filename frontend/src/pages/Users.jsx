@@ -4,6 +4,7 @@ import FormField from "../components/FormField.jsx";
 import Table from "../components/Table.jsx";
 import { maskPhone } from "../utils/mask.js";
 import { validateEmail, validatePassword, validatePhone } from "../utils/validators.js";
+import { toast } from "sonner";
 
 const initialForm = {
   full_name: "",
@@ -23,9 +24,13 @@ export default function Users() {
   const [total, setTotal] = useState(0);
 
   async function load() {
-    const data = await get(`/users?search=${encodeURIComponent(search)}&page=${page}`);
-    setItems(data.items);
-    setTotal(data.total);
+    try {
+      const data = await get(`/users?search=${encodeURIComponent(search)}&page=${page}`);
+      setItems(data.items);
+      setTotal(data.total);
+    } catch (err) {
+      toast.error(err.message || "Erro ao carregar colaboradoras.");
+    }
   }
 
   useEffect(() => {
@@ -37,30 +42,36 @@ export default function Users() {
     const emailError = validateEmail(form.email);
     const phoneError = validatePhone(form.phone);
     if (emailError || phoneError) {
-      alert(emailError || phoneError);
+      toast.error(emailError || phoneError);
       return;
     }
     if (!editingId) {
       const passwordError = validatePassword(form.password);
       if (passwordError) {
-        alert(passwordError);
+        toast.error(passwordError);
         return;
       }
     } else if (form.password) {
       const passwordError = validatePassword(form.password);
       if (passwordError) {
-        alert(passwordError);
+        toast.error(passwordError);
         return;
       }
     }
-    if (editingId) {
-      await put(`/users/${editingId}`, form);
-    } else {
-      await post("/users", form);
+    try {
+      if (editingId) {
+        await put(`/users/${editingId}`, form);
+        toast.success("Colaboradora atualizada com sucesso.");
+      } else {
+        await post("/users", form);
+        toast.success("Colaboradora cadastrada com sucesso.");
+      }
+      setForm(initialForm);
+      setEditingId(null);
+      load();
+    } catch (err) {
+      toast.error(err.message || "Erro ao salvar.");
     }
-    setForm(initialForm);
-    setEditingId(null);
-    load();
   }
 
   function handleEdit(item) {
@@ -79,7 +90,7 @@ export default function Users() {
     <div className="grid grid-2">
       <div className="card">
         <div className="flex-between">
-          <h3>Colaboradoras</h3>
+          <h2 className="page-title">Colaboradoras</h2>
           <input
             className="input"
             style={{ maxWidth: "180px" }}
@@ -106,15 +117,16 @@ export default function Users() {
           )}
         />
         <div className="flex" style={{ marginTop: "12px" }}>
-          <button className="button secondary" onClick={() => setPage(Math.max(1, page - 1))}>
+          <button type="button" className="button secondary" onClick={() => setPage(Math.max(1, page - 1))}>
             Anterior
           </button>
           <button
+            type="button"
             className="button secondary"
             onClick={() => setPage(page + 1)}
             disabled={page * 10 >= total}
           >
-            Proxima
+            Próxima
           </button>
         </div>
       </div>
@@ -140,7 +152,7 @@ export default function Users() {
             onChange={(e) => setForm({ ...form, phone: maskPhone(e.target.value) })}
             required
           />
-          <label className="label">Funcao</label>
+          <label className="label">Função</label>
           <select
             className="input"
             value={form.role}
