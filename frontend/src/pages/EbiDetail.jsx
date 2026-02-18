@@ -8,6 +8,7 @@ import Modal from "../components/Modal.jsx";
 import { formatDate, formatDateTime } from "../utils/format.js";
 import { getRole } from "../api/auth.js";
 import { maskPhone } from "../utils/mask.js";
+import { mensagemParaUsuario } from "../utils/apiErrors.js";
 import { validatePhone } from "../utils/validators.js";
 import { toast } from "sonner";
 
@@ -22,6 +23,7 @@ export default function EbiDetail() {
     guardian_name_day: "",
     guardian_phone_day: ""
   });
+  const [presenceModalOpen, setPresenceModalOpen] = useState(false);
   const [confirmId, setConfirmId] = useState(null);
   const [reopenOpen, setReopenOpen] = useState(false);
   const [checkoutPin, setCheckoutPin] = useState("");
@@ -33,7 +35,7 @@ export default function EbiDetail() {
       const data = await get(`/ebi/${id}`);
       setEbi(data);
     } catch (err) {
-      toast.error(err.message || "Erro ao carregar EBI.");
+      toast.error(mensagemParaUsuario(err, "Erro ao carregar EBI."));
     }
   }
 
@@ -42,7 +44,7 @@ export default function EbiDetail() {
       const data = await get("/children?page=1&page_size=100");
       setChildren(data.items);
     } catch (err) {
-      toast.error(err.message || "Erro ao carregar crianças.");
+      toast.error(mensagemParaUsuario(err, "Erro ao carregar crianças."));
     }
   }
 
@@ -77,8 +79,36 @@ export default function EbiDetail() {
     });
   }
 
+  function openPresenceModal() {
+    setForm({
+      child_id: "",
+      guardian_id: "",
+      guardian_name_day: "",
+      guardian_phone_day: ""
+    });
+    setPresenceModalOpen(true);
+  }
+
+  function closePresenceModal() {
+    setPresenceModalOpen(false);
+    setForm({
+      child_id: "",
+      guardian_id: "",
+      guardian_name_day: "",
+      guardian_phone_day: ""
+    });
+  }
+
   async function handleAddPresence(event) {
     event.preventDefault();
+    if (!form.child_id) {
+      toast.error("Selecione uma criança.");
+      return;
+    }
+    if (!form.guardian_name_day?.trim()) {
+      toast.error("Informe o nome do responsável do dia.");
+      return;
+    }
     const phoneError = validatePhone(form.guardian_phone_day);
     if (phoneError) {
       toast.error(phoneError);
@@ -91,14 +121,14 @@ export default function EbiDetail() {
         guardian_phone_day: form.guardian_phone_day
       });
       toast.success("Presença registrada com sucesso.");
+      closePresenceModal();
       if (created?.pin_code) {
         setEntryPinCode(created.pin_code);
         setEntryPinOpen(true);
       }
-      setForm({ child_id: "", guardian_name_day: "", guardian_phone_day: "" });
       load();
     } catch (err) {
-      toast.error(err.message || "Erro ao registrar presença.");
+      toast.error(mensagemParaUsuario(err, "Erro ao registrar presença."));
     }
   }
 
@@ -110,7 +140,7 @@ export default function EbiDetail() {
       setCheckoutPin("");
       load();
     } catch (err) {
-      toast.error(err.message || "Erro ao registrar saída.");
+      toast.error(mensagemParaUsuario(err, "Erro ao registrar saída."));
     }
   }
 
@@ -120,7 +150,7 @@ export default function EbiDetail() {
       toast.success("EBI encerrado com sucesso.");
       load();
     } catch (err) {
-      toast.error(err.message || "Erro ao encerrar EBI.");
+      toast.error(mensagemParaUsuario(err, "Erro ao encerrar EBI."));
     }
   }
 
@@ -131,78 +161,97 @@ export default function EbiDetail() {
       setReopenOpen(false);
       load();
     } catch (err) {
-      toast.error(err.message || "Erro ao reabrir EBI.");
+      toast.error(mensagemParaUsuario(err, "Erro ao reabrir EBI."));
     }
   }
 
-  if (!ebi) return <div className="card">Carregando...</div>;
+  if (!ebi) {
+    return (
+      <div className="card rounded-2xl border border-border/50 shadow-xl animate-pulse">
+        <div className="h-8 w-48 rounded-xl bg-muted/50 mb-4" />
+        <div className="h-32 rounded-xl bg-muted/30" />
+      </div>
+    );
+  }
 
   const allClosed = ebi.presences.every((item) => item.exit_at);
 
   return (
-    <div className="grid grid-2">
-      <div className="card">
-        <div className="flex-between">
-          <div>
-            <h3>EBI {formatDate(ebi.ebi_date)}</h3>
-            <p className="muted">Grupo {ebi.group_number}</p>
-            <p className="muted">Status: {ebi.status}</p>
-          </div>
+    <div className="card rounded-2xl border border-border/50 shadow-xl">
+      <div className="page-header flex-between">
+        <div>
+          <h3 className="text-lg font-semibold text-foreground">EBI {formatDate(ebi.ebi_date)}</h3>
+          <p className="muted">Grupo {ebi.group_number}</p>
+          <p className="muted">Status: {ebi.status}</p>
+        </div>
+        <div className="page-header-actions flex gap-2 flex-wrap">
+          <button
+            type="button"
+            className="button rounded-xl"
+            onClick={openPresenceModal}
+            disabled={ebi.status === "ENCERRADO"}
+          >
+            Registrar presença
+          </button>
           {role === "COORDENADORA" && (
-            <div className="flex">
-              <button type="button" className="button danger" disabled={!allClosed || ebi.status === "ENCERRADO"} onClick={handleCloseEbi}>
+            <>
+              <button type="button" className="button danger rounded-xl" disabled={!allClosed || ebi.status === "ENCERRADO"} onClick={handleCloseEbi}>
                 Encerrar EBI
               </button>
               <button
                 type="button"
-                className="button secondary"
+                className="button secondary rounded-xl"
                 disabled={ebi.status !== "ENCERRADO"}
                 onClick={() => setReopenOpen(true)}
               >
                 Reabrir EBI
               </button>
-            </div>
+            </>
           )}
-        </div>
-        <Table
-          columns={[
-            { key: "child_name", label: "Criança" },
-            { key: "guardian_name_day", label: "Responsável" },
-            { key: "entry_at", label: "Entrada" },
-            { key: "exit_at", label: "Saída" }
-          ]}
-          rows={ebi.presences.map((item) => ({
-            ...item,
-            entry_at: formatDateTime(item.entry_at),
-            exit_at: formatDateTime(item.exit_at)
-          }))}
-          actions={(row) => (
-            <button
-              type="button"
-              className="button secondary"
-              disabled={Boolean(row.exit_at) || ebi.status === "ENCERRADO"}
-              onClick={() => {
-                setConfirmId(row.id);
-                setCheckoutPin("");
-              }}
-            >
-              Registrar saída
-            </button>
-          )}
-        />
-        <div style={{ marginTop: "12px" }}>
-          <Link className="button secondary" to={`/reports/ebi/${id}`}>Relatório do EBI</Link>
         </div>
       </div>
-      <div className="card">
-        <h3>Registrar presença</h3>
-        <form onSubmit={handleAddPresence}>
+      <Table
+        columns={[
+          { key: "child_name", label: "Criança" },
+          { key: "guardian_name_day", label: "Responsável" },
+          { key: "entry_at", label: "Entrada" },
+          { key: "exit_at", label: "Saída" }
+        ]}
+        rows={ebi.presences.map((item) => ({
+          ...item,
+          entry_at: formatDateTime(item.entry_at),
+          exit_at: formatDateTime(item.exit_at)
+        }))}
+        actions={(row) => (
+          <button
+            type="button"
+            className="button secondary rounded-xl"
+            disabled={Boolean(row.exit_at) || ebi.status === "ENCERRADO"}
+            onClick={() => {
+              setConfirmId(row.id);
+              setCheckoutPin("");
+            }}
+          >
+            Registrar saída
+          </button>
+        )}
+      />
+      <div className="mt-6">
+        <Link className="button secondary rounded-xl" to={`/reports/ebi/${id}`}>Relatório do EBI</Link>
+      </div>
+
+      <Modal
+        open={presenceModalOpen}
+        title="Registrar presença"
+        onClose={closePresenceModal}
+        contentClassName="sm:max-w-[480px]"
+      >
+        <form onSubmit={handleAddPresence} className="flex flex-col gap-2" noValidate>
           <label className="label">Criança</label>
           <select
-            className="input"
+            className="input rounded-xl"
             value={form.child_id}
             onChange={(e) => handleSelectChild(e.target.value)}
-            required
           >
             <option value="">Selecione</option>
             {children.map((child) => (
@@ -213,7 +262,7 @@ export default function EbiDetail() {
           </select>
           <label className="label" style={{ marginTop: "12px" }}>Responsavel</label>
           <select
-            className="input"
+            className="input rounded-xl"
             value={form.guardian_id}
             onChange={(e) => handleSelectGuardian(e.target.value)}
             disabled={!form.child_id}
@@ -231,19 +280,21 @@ export default function EbiDetail() {
             label="Responsável do dia"
             value={form.guardian_name_day}
             onChange={(e) => setForm({ ...form, guardian_name_day: e.target.value })}
-            required
           />
           <FormField
             label="Contato do dia"
             value={form.guardian_phone_day}
             onChange={(e) => setForm({ ...form, guardian_phone_day: maskPhone(e.target.value) })}
-            required
           />
-          <button type="submit" className="button" style={{ marginTop: "12px" }} disabled={ebi.status === "ENCERRADO"}>
-            Registrar presença
-          </button>
+          <div className="flex gap-3 mt-4">
+            <button type="submit" className="button rounded-xl">Registrar presença</button>
+            <button type="button" className="button secondary rounded-xl" onClick={closePresenceModal}>
+              Cancelar
+            </button>
+          </div>
         </form>
-      </div>
+      </Modal>
+
       <Modal
         open={Boolean(confirmId)}
         title="PIN de saída"
@@ -258,11 +309,10 @@ export default function EbiDetail() {
           onChange={(e) => setCheckoutPin(e.target.value.replace(/\D/g, "").slice(0, 4))}
           inputMode="numeric"
           autoComplete="one-time-code"
-          required
         />
         <button
           type="button"
-          className="button"
+          className="button rounded-xl"
           onClick={handleCheckout}
           disabled={checkoutPin.length !== 4}
         >
@@ -283,7 +333,7 @@ export default function EbiDetail() {
         </div>
         <button
           type="button"
-          className="button secondary"
+          className="button secondary rounded-xl"
           onClick={() => {
             setEntryPinOpen(false);
             setEntryPinCode("");

@@ -1,3 +1,5 @@
+import { mensagemErroAmigavel } from "../utils/apiErrors.js";
+
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api/v1";
 
 function getToken() {
@@ -11,19 +13,25 @@ async function request(path, options = {}) {
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_URL}${path}`, {
-    ...options,
-    headers
-  });
+  let response;
+  try {
+    response = await fetch(`${API_URL}${path}`, {
+      ...options,
+      headers
+    });
+  } catch (err) {
+    throw new Error("Não foi possível conectar ao servidor. Verifique sua conexão.");
+  }
 
   if (!response.ok) {
     let payload = null;
     try {
-      payload = await response.json();
-    } catch (err) {
-      payload = { detail: "Unknown error" };
+      const text = await response.text();
+      payload = text ? JSON.parse(text) : null;
+    } catch {
+      payload = null;
     }
-    const message = payload.detail || payload.title || "Request failed";
+    const message = mensagemErroAmigavel(payload, response.status);
     throw new Error(message);
   }
 

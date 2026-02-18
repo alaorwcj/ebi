@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { get, put } from "../api/client.js";
+import DatePicker from "../components/DatePicker.jsx";
 import FormField from "../components/FormField.jsx";
 import { maskCPF, maskPhone, maskZipCode } from "../utils/mask.js";
+import { mensagemParaUsuario } from "../utils/apiErrors.js";
+import { validatePhone } from "../utils/validators.js";
 import { toast } from "sonner";
 
 const documentTypeLabels = {
@@ -56,7 +59,7 @@ export default function Profile() {
         password: ""
       });
     } catch (err) {
-      toast.error(err.message || "Erro ao carregar perfil.");
+      toast.error(mensagemParaUsuario(err, "Erro ao carregar perfil."));
     }
   }
 
@@ -66,12 +69,21 @@ export default function Profile() {
 
   async function handleSubmit(event) {
     event.preventDefault();
+    if (!form.full_name?.trim()) {
+      toast.error("Informe o nome completo.");
+      return;
+    }
+    const phoneError = validatePhone(form.phone);
+    if (phoneError) {
+      toast.error(phoneError);
+      return;
+    }
     try {
       await put("/profile/me", form);
       toast.success("Perfil atualizado com sucesso.");
       loadProfile();
     } catch (err) {
-      toast.error(err.message || "Erro ao salvar perfil.");
+      toast.error(mensagemParaUsuario(err, "Erro ao salvar perfil."));
     }
   }
 
@@ -114,7 +126,7 @@ export default function Profile() {
       toast.success("Documento enviado com sucesso.");
       loadProfile();
     } catch (err) {
-      toast.error(err.message || "Erro ao enviar documento.");
+      toast.error(mensagemParaUsuario(err, "Erro ao enviar documento."));
     } finally {
       setUploading(false);
       event.target.value = "";
@@ -141,7 +153,7 @@ export default function Profile() {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (err) {
-      toast.error(err.message || "Erro ao baixar documento.");
+      toast.error(mensagemParaUsuario(err, "Erro ao baixar documento."));
     }
   }
 
@@ -161,7 +173,7 @@ export default function Profile() {
       toast.success("Documento removido com sucesso.");
       loadProfile();
     } catch (err) {
-      toast.error(err.message || "Erro ao remover documento.");
+      toast.error(mensagemParaUsuario(err, "Erro ao remover documento."));
     }
   }
 
@@ -170,28 +182,31 @@ export default function Profile() {
   }
 
   if (!profile) {
-    return <div className="card">Carregando...</div>;
+    return (
+      <div className="card rounded-2xl border border-border/50 shadow-xl animate-pulse">
+        <div className="h-8 w-48 rounded-xl bg-muted/50 mb-6" />
+        <div className="h-64 rounded-xl bg-muted/30" />
+      </div>
+    );
   }
 
   return (
-    <div className="grid grid-2">
-      <div className="card">
-        <h2 className="page-title">Meu Perfil</h2>
-        <form onSubmit={handleSubmit}>
+    <div className="grid grid-2 gap-6">
+      <div className="card rounded-2xl border border-border/50 shadow-xl">
+        <h2 className="text-xl font-semibold text-foreground">Meu Perfil</h2>
+        <form onSubmit={handleSubmit} noValidate>
           <h3 style={{ marginTop: "24px", marginBottom: "12px" }}>Dados Básicos</h3>
           
           <FormField
             label="Nome completo"
             value={form.full_name}
             onChange={(e) => setForm({ ...form, full_name: e.target.value })}
-            required
           />
           
           <FormField
             label="Telefone"
             value={form.phone}
             onChange={(e) => setForm({ ...form, phone: maskPhone(e.target.value) })}
-            required
           />
 
           <FormField
@@ -220,11 +235,11 @@ export default function Profile() {
             />
           </div>
 
-          <FormField
+          <DatePicker
             label="Data de Nascimento"
             value={form.birth_date}
             onChange={(e) => setForm({ ...form, birth_date: e.target.value })}
-            type="date"
+            maxDate={new Date()}
           />
 
           <h3 style={{ marginTop: "24px", marginBottom: "12px" }}>Endereço</h3>
@@ -246,7 +261,7 @@ export default function Profile() {
             <div>
               <label className="label">Estado</label>
               <select
-                className="input"
+                className="input rounded-xl"
                 value={form.state}
                 onChange={(e) => setForm({ ...form, state: e.target.value })}
               >
@@ -278,14 +293,14 @@ export default function Profile() {
             onChange={(e) => setForm({ ...form, emergency_contact_phone: maskPhone(e.target.value) })}
           />
 
-          <button className="button" style={{ marginTop: "24px" }}>
+          <button className="button rounded-xl mt-6" type="submit">
             Salvar Perfil
           </button>
         </form>
       </div>
 
-      <div className="card">
-        <h2 className="page-title">Documentos Obrigatórios</h2>
+      <div className="card rounded-2xl border border-border/50 shadow-xl">
+        <h2 className="text-xl font-semibold text-foreground">Documentos Obrigatórios</h2>
         <p style={{ fontSize: "14px", color: "#666", marginBottom: "24px" }}>
           Conforme legislação brasileira (ECA - Estatuto da Criança e do Adolescente),
           é obrigatório o envio dos documentos abaixo para trabalhar com crianças.

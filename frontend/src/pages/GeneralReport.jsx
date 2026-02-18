@@ -12,6 +12,7 @@ import {
 } from "chart.js";
 import { get } from "../api/client.js";
 import ChartCard from "../components/ChartCard.jsx";
+import { mensagemParaUsuario } from "../utils/apiErrors.js";
 import { toast } from "sonner";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, PointElement, LineElement, Tooltip, Legend);
@@ -22,16 +23,27 @@ export default function GeneralReport() {
   useEffect(() => {
     get("/reports/general")
       .then(setReport)
-      .catch((err) => toast.error(err.message || "Erro ao carregar relatório."));
+      .catch((err) => toast.error(mensagemParaUsuario(err, "Erro ao carregar relatório.")));
   }, []);
 
-  if (!report) return <div className="card">Carregando...</div>;
+  if (!report) {
+    return (
+      <div className="space-y-6">
+        <div className="h-8 w-48 rounded-xl bg-muted/50 animate-pulse" />
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-5">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="card rounded-2xl h-28 animate-pulse" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   const last3Labels = ["Há 2 meses", "Mês passado", "Este mês"];
   const last12Labels = Array.from({ length: 12 }, (_, i) => `${12 - i}º mês`).reverse();
 
   return (
-    <div className="report-general">
+    <div className="report-general space-y-8">
       <h2 className="page-title">Relatório Geral</h2>
       <div className="report-cards">
         <div className="report-card">
@@ -52,8 +64,8 @@ export default function GeneralReport() {
         </div>
       </div>
       {report.by_group && Object.keys(report.by_group).length > 0 && (
-        <div className="card">
-          <h3>Presenças por grupo</h3>
+        <div className="card rounded-2xl border border-border/50 shadow-xl">
+          <h3 className="text-lg font-medium text-foreground mb-1">Presenças por grupo</h3>
           <div className="report-by-group">
             {Object.entries(report.by_group).map(([group, count]) => (
               <div key={group} className="report-by-group-item">

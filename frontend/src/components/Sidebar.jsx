@@ -1,151 +1,258 @@
-import { NavLink } from "react-router-dom";
-import { getRole } from "../api/auth.js";
+import { useState, useCallback } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
+import {
+  Calendar,
+  Users,
+  User,
+  FolderPlus,
+  UsersRound,
+  BarChart3,
+  FileText,
+  LogOut,
+  Menu,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
+import { useMenu } from "../hooks/useMenu.js";
+import { SidebarIconBox } from "./SidebarIconBox.jsx";
+import { clearAuth, getRole } from "../api/auth.js";
+import { useMediaQuery, MOBILE_BREAKPOINT } from "../hooks/useMediaQuery.js";
 
-const navItems = [
-  { to: "/ebis", label: "EBIs", icon: IconEbis },
-  { to: "/children", label: "Crianças", icon: IconChildren },
-  { to: "/profile", label: "Meu Perfil", icon: IconProfile },
-  { to: "/users", label: "Usuários", icon: IconUsers, role: "ADMINISTRADOR" },
-  { to: "/reports/general", label: "Relatório Geral", icon: IconChart, role: "COORDENADORA" },
-];
+const ICON_MAP = {
+  Calendar,
+  Users,
+  User,
+  FolderPlus,
+  UsersRound,
+  BarChart3,
+  FileText,
+};
 
-function IconEbis() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-      <line x1="16" y1="2" x2="16" y2="6" />
-      <line x1="8" y1="2" x2="8" y2="6" />
-      <line x1="3" y1="10" x2="21" y2="10" />
-    </svg>
-  );
+function MenuIcon({ name, size = 22 }) {
+  const Icon = ICON_MAP[name] || User;
+  return <Icon size={size} strokeWidth={2} aria-hidden />;
 }
 
-function IconChildren() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-    </svg>
-  );
-}
+export default function Sidebar({
+  collapsed: controlledCollapsed,
+  onToggleCollapse,
+  mobileOpen,
+  onMobileToggle,
+}) {
+  const navigate = useNavigate();
+  const { menuItems } = useMenu();
+  const [expandedMenus, setExpandedMenus] = useState(new Set());
+  const isMobile = useMediaQuery(MOBILE_BREAKPOINT);
 
-function IconUsers() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-    </svg>
-  );
-}
+  const isExpanded = controlledCollapsed === false;
 
-function IconProfile() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-      <circle cx="12" cy="7" r="4" />
-    </svg>
-  );
-}
+  const toggleSidebar = useCallback(() => {
+    if (isExpanded) setExpandedMenus(new Set());
+    onToggleCollapse?.();
+  }, [isExpanded, onToggleCollapse]);
 
-function IconChart() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <line x1="18" y1="20" x2="18" y2="10" />
-      <line x1="12" y1="20" x2="12" y2="4" />
-      <line x1="6" y1="20" x2="6" y2="14" />
-    </svg>
+  const isSubmenuExpanded = useCallback(
+    (label) => expandedMenus.has(label),
+    [expandedMenus]
   );
-}
 
-function IconMenu() {
-  return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <line x1="3" y1="12" x2="21" y2="12" />
-      <line x1="3" y1="6" x2="21" y2="6" />
-      <line x1="3" y1="18" x2="21" y2="18" />
-    </svg>
+  const toggleSubmenu = useCallback(
+    (menuLabel) => {
+      if (!isExpanded) onToggleCollapse?.();
+      setExpandedMenus((prev) => {
+        const next = new Set(prev);
+        if (next.has(menuLabel)) next.delete(menuLabel);
+        else next.add(menuLabel);
+        return next;
+      });
+    },
+    [isExpanded, onToggleCollapse]
   );
-}
 
-function IconChevronLeft() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <polyline points="15 18 9 12 15 6" />
-    </svg>
-  );
-}
+  const handleLogout = useCallback(() => {
+    clearAuth();
+    navigate("/login");
+    onMobileToggle?.();
+  }, [navigate, onMobileToggle]);
 
-function IconChevronRight() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <polyline points="9 18 15 12 9 6" />
-    </svg>
-  );
-}
+  const navigateToProfile = useCallback(() => {
+    navigate("/profile");
+    onMobileToggle?.();
+  }, [navigate, onMobileToggle]);
 
-export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onMobileToggle }) {
   const role = getRole();
-  const filtered = navItems.filter((item) => !item.role || item.role === role);
-
-  const linkContent = (item) => (
-    <>
-      <span className="sidebar-icon">{item.icon ? <item.icon /> : null}</span>
-      <span className="sidebar-label">{item.label}</span>
-    </>
-  );
-
-  const nav = (
-    <nav className="sidebar-nav">
-      {filtered.map((item) => (
-        <NavLink
-          key={item.to}
-          to={item.to}
-          className={({ isActive }) => `sidebar-link ${isActive ? "sidebar-link--active" : ""}`}
-          end={item.to === "/ebis"}
-          onClick={onMobileToggle}
-        >
-          {linkContent(item)}
-        </NavLink>
-      ))}
-    </nav>
-  );
+  const userName =
+    role === "ADMINISTRADOR"
+      ? "Administrador"
+      : role === "COORDENADORA"
+        ? "Coordenadora"
+        : "Colaboradora";
+  const profileImageUrl = null; // opcional: URL da foto do usuário
 
   return (
     <>
       <button
         type="button"
-        className="sidebar-mobile-trigger"
+        className="sidebar-wpay-mobile-trigger"
         onClick={onMobileToggle}
         aria-label="Abrir menu"
         aria-expanded={mobileOpen}
       >
-        <IconMenu />
+        <Menu size={24} strokeWidth={2} aria-hidden />
       </button>
-      <div className={`sidebar-overlay ${mobileOpen ? "sidebar-overlay--open" : ""}`} onClick={onMobileToggle} aria-hidden="true" />
-      <aside className={`sidebar ${collapsed ? "sidebar--collapsed" : ""} ${mobileOpen ? "sidebar--mobile-open" : ""}`}>
-        <div className="sidebar-inner">
-          <div className="sidebar-header">
-            <img
-              src="/img/Logo_oficial_CCB.png"
-              alt="Logo CCB"
-              className="sidebar-logo"
-            />
-            <button
-              type="button"
-              className="sidebar-collapse-btn"
-              onClick={onToggleCollapse}
-              aria-label={collapsed ? "Expandir menu" : "Recolher menu"}
-            >
-              {collapsed ? <IconChevronRight /> : <IconChevronLeft />}
-            </button>
-          </div>
-          {nav}
+      <div
+        className={`sidebar-wpay-overlay ${mobileOpen ? "sidebar-wpay-overlay--open" : ""}`}
+        onClick={onMobileToggle}
+        aria-hidden
+      />
+      <section
+        id="sidebar-wpay-content"
+        className={`sidebar-wpay ${isExpanded || mobileOpen ? "sidebar-wpay--expanded" : ""} ${mobileOpen ? "sidebar-wpay--mobile-open" : ""}`}
+      >
+        {/* Botão hamburger: no mobile abre/fecha overlay; no desktop expande/recolhe a pill */}
+        <div
+          id="sidebar-wpay-logo"
+          className="sidebar-wpay-logo"
+          onClick={() => {
+            if (isMobile) {
+              onMobileToggle?.();
+            } else {
+              if (mobileOpen) onMobileToggle?.();
+              else toggleSidebar();
+            }
+          }}
+          onKeyDown={(e) => {
+            if (e.key !== "Enter" && e.key !== " ") return;
+            if (isMobile) onMobileToggle?.();
+            else {
+              if (mobileOpen) onMobileToggle?.();
+              else toggleSidebar();
+            }
+          }}
+          role="button"
+          tabIndex={0}
+          aria-label={
+            isMobile
+              ? mobileOpen
+                ? "Fechar menu"
+                : "Abrir menu"
+              : mobileOpen
+                ? "Fechar menu"
+                : isExpanded
+                  ? "Recolher menu"
+                  : "Expandir menu"
+          }
+        >
+          <Menu size={24} strokeWidth={2} aria-hidden className="sidebar-wpay-logo-icon" />
         </div>
-      </aside>
+
+        {/* Área de menus (scroll) */}
+        <div id="sidebar-wpay-menus" className="sidebar-wpay-menus">
+          <ul>
+            {menuItems.map((menu) => (
+              <li key={menu.label} className="sidebar-wpay-menu-wrapper">
+                {!menu.subItems?.length ? (
+                  <NavLink
+                    to={menu.path}
+                    className={({ isActive }) =>
+                      `sidebar-wpay-menu-item ${isActive ? "sidebar-wpay-menu-item--active" : ""}`
+                    }
+                    onClick={() => {
+                      if (mobileOpen) onMobileToggle?.();
+                    }}
+                  >
+                    <SidebarIconBox size="medium">
+                      <MenuIcon name={menu.icon} />
+                    </SidebarIconBox>
+                    <span className="sidebar-wpay-label">{menu.label}</span>
+                  </NavLink>
+                ) : (
+                  <>
+                    <div
+                      className={`sidebar-wpay-menu-item sidebar-wpay-menu-item--has-submenu ${isSubmenuExpanded(menu.label) ? "sidebar-wpay-menu-item--submenu-open" : ""}`}
+                      onClick={() => toggleSubmenu(menu.label)}
+                      onKeyDown={(e) =>
+                        (e.key === "Enter" || e.key === " ") && toggleSubmenu(menu.label)
+                      }
+                      role="button"
+                      tabIndex={0}
+                    >
+                      <SidebarIconBox size="medium">
+                        <MenuIcon name={menu.icon} />
+                      </SidebarIconBox>
+                      <span className="sidebar-wpay-label">{menu.label}</span>
+                      {isExpanded &&
+                        (isSubmenuExpanded(menu.label) ? (
+                          <ChevronUp size={16} className="sidebar-wpay-chevron" aria-hidden />
+                        ) : (
+                          <ChevronDown size={16} className="sidebar-wpay-chevron" aria-hidden />
+                        ))}
+                    </div>
+                    <ul
+                      className={`sidebar-wpay-submenu ${isSubmenuExpanded(menu.label) ? "sidebar-wpay-submenu--expanded" : ""}`}
+                    >
+                      {menu.subItems.map((sub) => (
+                        <li key={sub.label} className="sidebar-wpay-submenu-item">
+                          <NavLink
+                            to={sub.path}
+                            className={({ isActive }) =>
+                              `sidebar-wpay-submenu-link ${isActive ? "sidebar-wpay-submenu-link--active" : ""}`
+                            }
+                            onClick={() => {
+                              if (mobileOpen) onMobileToggle?.();
+                            }}
+                          >
+                            <SidebarIconBox size="small">
+                              <MenuIcon name={sub.icon} size={16} />
+                            </SidebarIconBox>
+                            <span className="sidebar-wpay-label">{sub.label}</span>
+                          </NavLink>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Footer fixo */}
+        <div id="sidebar-wpay-footer" className="sidebar-wpay-footer">
+          <ul>
+            <li>
+              <button
+                type="button"
+                className="sidebar-wpay-menu-item sidebar-wpay-footer-logout"
+                onClick={handleLogout}
+              >
+                <SidebarIconBox size="medium">
+                  <LogOut size={22} strokeWidth={2} aria-hidden />
+                </SidebarIconBox>
+                <span className="sidebar-wpay-label">Sair</span>
+              </button>
+            </li>
+          </ul>
+          <div
+            className="sidebar-wpay-user-profile"
+            onClick={navigateToProfile}
+            onKeyDown={(e) =>
+              (e.key === "Enter" || e.key === " ") && navigateToProfile()
+            }
+            role="button"
+            tabIndex={0}
+          >
+            {profileImageUrl ? (
+              <img src={profileImageUrl} alt="" className="sidebar-wpay-user-avatar" />
+            ) : (
+              <div className="sidebar-wpay-user-placeholder">
+                <User size={22} strokeWidth={2} aria-hidden />
+              </div>
+            )}
+            <span className="sidebar-wpay-label sidebar-wpay-user-name">{userName}</span>
+          </div>
+        </div>
+      </section>
     </>
   );
 }

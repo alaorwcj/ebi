@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { mensagemParaUsuario } from "../utils/apiErrors.js";
 import { toast } from "sonner";
 import { login, setAuth } from "../api/auth.js";
 import FormField from "../components/FormField.jsx";
@@ -14,6 +15,18 @@ export default function Login() {
 
   async function handleSubmit(event) {
     event.preventDefault();
+    if (!email?.trim()) {
+      toast.error("Informe o email.");
+      return;
+    }
+    if (!password) {
+      toast.error("Informe a senha.");
+      return;
+    }
+    if (password.length < 8) {
+      toast.error("A senha deve ter no mínimo 8 caracteres.");
+      return;
+    }
     setLoading(true);
     try {
       const payload = await login(email, password);
@@ -21,7 +34,7 @@ export default function Login() {
       toast.success("Login realizado com sucesso.");
       navigate("/ebis");
     } catch (err) {
-      toast.error(err.message || "Falha no login. Verifique email e senha.");
+      toast.error(mensagemParaUsuario(err, "Falha no login. Verifique email e senha."));
     } finally {
       setLoading(false);
     }
@@ -29,7 +42,7 @@ export default function Login() {
 
   return (
     <main className="login-page">
-      <Card className="w-full max-w-[400px] login-card">
+      <Card className="w-full max-w-[420px] login-card rounded-2xl border border-border/50 shadow-2xl">
         <CardHeader className="flex flex-col items-center gap-3">
           <img
             src="/img/Logo_oficial_CCB.png"
@@ -40,14 +53,13 @@ export default function Login() {
           <p className="text-muted-foreground text-sm login-subtitle">EBI Vila Paula</p>
         </CardHeader>
         <CardContent className="px-6">
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
             <FormField
               label="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               type="email"
               autoComplete="username"
-              required
             />
             <FormField
               label="Senha"
@@ -55,7 +67,6 @@ export default function Login() {
               onChange={(e) => setPassword(e.target.value)}
               type="password"
               autoComplete="current-password"
-              required
               minLength={8}
             />
             <Button type="submit" disabled={loading}>
