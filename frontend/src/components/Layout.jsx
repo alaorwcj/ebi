@@ -3,9 +3,10 @@ import { Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar.jsx";
 import Header from "./Header.jsx";
 import Footer from "./Footer.jsx";
+import BottomNav from "./BottomNav.jsx";
 
 export default function Layout() {
-  const [collapsed, setCollapsed] = useState(true); /* recolhida por padrão (estilo WPay) */
+  const [collapsed, setCollapsed] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
@@ -18,10 +19,11 @@ export default function Layout() {
       />
       <div className="app-main">
         <Header />
-        <div className="app-content">
+        <main className="app-content">
           <Outlet />
-        </div>
+        </main>
         <Footer />
+        <BottomNav />
       </div>
     </div>
   );

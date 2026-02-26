@@ -5,6 +5,7 @@ import ThemedToaster from "./components/ThemedToaster.jsx";
 import App from "./App.jsx";
 import "./styles.css";
 
+// HMR Pulse Trigger
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <BrowserRouter>

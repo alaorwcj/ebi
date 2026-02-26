@@ -3,12 +3,12 @@ import { Link } from "react-router-dom";
 import { get, post } from "../api/client.js";
 import DatePicker from "../components/DatePicker.jsx";
 import FormField from "../components/FormField.jsx";
-import Table from "../components/Table.jsx";
 import Modal from "../components/Modal.jsx";
 import { formatDate } from "../utils/format.js";
 import { mensagemParaUsuario } from "../utils/apiErrors.js";
 import { getRole } from "../api/auth.js";
 import { toast } from "sonner";
+import { Search, PlusCircle, ExternalLink, BarChart3, Users } from "lucide-react";
 
 const initialForm = {
   ebi_date: "",
@@ -48,7 +48,7 @@ export default function Ebis() {
 
   useEffect(() => {
     load();
-    if (role === "COORDENADORA") {
+    if (role === "COORDENADORA" || role === "ADMINISTRADOR") {
       loadUsers();
     }
   }, [page]);
@@ -94,58 +94,97 @@ export default function Ebis() {
   }
 
   return (
-    <div className="card rounded-2xl border border-border/50 shadow-xl">
-      <div className="page-header flex-between">
-        <h2 className="text-xl font-semibold text-foreground">EBIs</h2>
-        <div className="page-header-actions flex" style={{ gap: "8px" }}>
+    <div className="space-y-6">
+      {/* Action Bar (Search + Create) */}
+      <div className="space-y-4">
+        <div className="relative group">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-primary transition-colors" size={20} />
           <input
-            className="input rounded-xl"
-            style={{ maxWidth: "200px" }}
-            placeholder="Buscar"
+            className="w-full bg-slate-900/50 border border-slate-800 rounded-2xl py-4 pl-12 pr-4 focus:ring-2 focus:ring-primary focus:border-transparent transition-all placeholder:text-slate-600 text-white"
+            placeholder="Search EBIs..."
+            type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onBlur={() => {
               setPage(1);
               load();
             }}
+            onKeyDown={(e) => e.key === 'Enter' && load()}
           />
-          {role === "COORDENADORA" && (
-            <button type="button" className="button rounded-xl" onClick={openCreateModal}>
-              Criar EBI
-            </button>
-          )}
+        </div>
+        {role === "COORDENADORA" && (
+          <button
+            className="gradient-button w-full py-4 rounded-2xl flex items-center justify-center gap-2 font-bold text-white shadow-lg active:scale-95 transition-transform"
+            onClick={openCreateModal}
+          >
+            <PlusCircle size={22} />
+            <span>Criar EBI</span>
+          </button>
+        )}
+      </div>
+
+      {/* Grid Header */}
+      <div className="flex items-center justify-between px-2">
+        <h2 className="text-lg font-bold text-slate-400 uppercase tracking-widest text-[10px]">Recent Entries</h2>
+        <div className="text-primary text-sm font-semibold flex items-center gap-1 cursor-pointer">
+          View All <ExternalLink size={14} />
         </div>
       </div>
-      <Table
-        columns={[
-          { key: "ebi_date", label: "Data" },
-          { key: "group_number", label: "Grupo" },
-          { key: "status", label: "Status" }
-        ]}
-        rows={items.map((item) => ({
-          ...item,
-          ebi_date: formatDate(item.ebi_date)
-        }))}
-        actions={(row) => (
-          <div className="flex gap-2 justify-end">
-            <Link className="button secondary rounded-xl" to={`/ebis/${row.id}`}>
-              Abrir
-            </Link>
-            {role === "COORDENADORA" && (
-              <Link className="button secondary rounded-xl" to={`/reports/ebi/${row.id}`}>
-                Relatório
+
+      {/* Data Grid */}
+      <div className="space-y-4">
+        {items.map((item) => (
+          <div key={item.id} className="card p-5 rounded-2xl space-y-4 relative overflow-hidden">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-slate-500 text-[10px] font-medium uppercase tracking-tighter">Data do Registro</p>
+                <h3 className="text-lg font-bold text-slate-100 mt-0.5">{formatDate(item.ebi_date)}</h3>
+              </div>
+              <span className={`px-3 py-1 text-[10px] font-bold rounded-full border uppercase tracking-wider ${item.status === 'FECHADO'
+                  ? 'bg-red-500/10 text-red-500 border-red-500/20 status-glow-closed'
+                  : 'bg-green-500/10 text-green-500 border-green-500/20 status-glow-open'
+                }`}>
+                {item.status}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
+                <Users className="text-primary" size={20} />
+              </div>
+              <div>
+                <p className="text-slate-500 text-[10px]">Turma / Grupo</p>
+                <p className="font-semibold text-slate-200 uppercase text-sm">Grupo {item.group_number}</p>
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <Link to={`/ebis/${item.id}`} className="flex-1 py-2.5 rounded-xl bg-slate-100/5 border border-white/10 flex items-center justify-center gap-2 text-sm font-medium hover:bg-white/10 transition-colors text-white">
+                <ExternalLink size={16} />
+                Abrir
               </Link>
-            )}
+              {(role === "COORDENADORA" || role === "ADMINISTRADOR") && (
+                <Link to={`/reports/ebi/${item.id}`} className="flex-1 py-2.5 rounded-xl bg-slate-100/5 border border-white/10 flex items-center justify-center gap-2 text-sm font-medium hover:bg-white/10 transition-colors text-white">
+                  <BarChart3 size={16} />
+                  Relatório
+                </Link>
+              )}
+            </div>
           </div>
-        )}
-      />
-      <div className="pagination-actions flex gap-2 mt-6">
-        <button type="button" className="button secondary rounded-xl" onClick={() => setPage(Math.max(1, page - 1))}>
+        ))}
+      </div>
+
+      {/* Pagination */}
+      <div className="flex gap-2 mt-4 pb-8">
+        <button
+          className="flex-1 py-3 rounded-xl bg-slate-100/5 border border-white/10 text-white font-medium disabled:opacity-50"
+          onClick={() => setPage(Math.max(1, page - 1))}
+          disabled={page === 1}
+        >
           Anterior
         </button>
         <button
-          type="button"
-          className="button secondary rounded-xl"
+          className="flex-1 py-3 rounded-xl bg-slate-100/5 border border-white/10 text-white font-medium disabled:opacity-50"
           onClick={() => setPage(page + 1)}
           disabled={page * 10 >= total}
         >
@@ -153,6 +192,7 @@ export default function Ebis() {
         </button>
       </div>
 
+      {/* Modal logic remains for creation */}
       {role === "COORDENADORA" && (
         <Modal
           open={modalOpen}
@@ -160,56 +200,63 @@ export default function Ebis() {
           onClose={closeModal}
           contentClassName="sm:max-w-[480px]"
         >
-          <form onSubmit={handleSubmit} className="flex flex-col gap-2" noValidate>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
             <DatePicker
               label="Data"
               value={form.ebi_date}
               onChange={(e) => setForm({ ...form, ebi_date: e.target.value })}
             />
-            <label className="label">Grupo</label>
-            <select
-              className="input rounded-xl"
-              value={form.group_number}
-              onChange={(e) => setForm({ ...form, group_number: Number(e.target.value) })}
-            >
-              <option value={1}>1</option>
-              <option value={2}>2</option>
-              <option value={3}>3</option>
-              <option value={4}>4</option>
-            </select>
-            <label className="label" style={{ marginTop: "12px" }}>Coordenadora</label>
-            <select
-              className="input rounded-xl"
-              value={form.coordinator_id}
-              onChange={(e) => setForm({ ...form, coordinator_id: e.target.value })}
-            >
-              <option value="">Selecione</option>
-              {users
-                .filter((user) => user.role === "COORDENADORA")
-                .map((user) => (
-                  <option key={user.id} value={user.id}>
-                    {user.full_name}
-                  </option>
-                ))}
-            </select>
-            <label className="label" style={{ marginTop: "12px" }}>Colaboradoras presentes</label>
-            <select
-              className="input rounded-xl"
-              multiple
-              value={form.collaborator_ids}
-              onChange={handleCollaborators}
-            >
-              {users
-                .filter((user) => user.role === "COLABORADORA")
-                .map((user) => (
-                  <option key={user.id} value={user.id}>
-                    {user.full_name}
-                  </option>
-                ))}
-            </select>
-            <div className="flex gap-3 mt-4">
-              <button type="submit" className="button rounded-xl">Criar</button>
-              <button type="button" className="button secondary rounded-xl" onClick={closeModal}>
+            <FormField label="Grupo">
+              <select
+                className="input"
+                value={form.group_number}
+                onChange={(e) => setForm({ ...form, group_number: Number(e.target.value) })}
+              >
+                <option value={1}>1</option>
+                <option value={2}>2</option>
+                <option value={3}>3</option>
+                <option value={4}>4</option>
+                <option value={5}>5</option>
+              </select>
+            </FormField>
+
+            <FormField label="Coordenadora">
+              <select
+                className="input"
+                value={form.coordinator_id}
+                onChange={(e) => setForm({ ...form, coordinator_id: e.target.value })}
+              >
+                <option value="">Selecione</option>
+                {users
+                  .filter((user) => user.role === "COORDENADORA")
+                  .map((user) => (
+                    <option key={user.id} value={user.id}>
+                      {user.full_name}
+                    </option>
+                  ))}
+              </select>
+            </FormField>
+
+            <FormField label="Colaboradoras presentes">
+              <select
+                className="input"
+                multiple
+                value={form.collaborator_ids}
+                onChange={handleCollaborators}
+              >
+                {users
+                  .filter((user) => user.role === "COLABORADORA")
+                  .map((user) => (
+                    <option key={user.id} value={user.id}>
+                      {user.full_name}
+                    </option>
+                  ))}
+              </select>
+            </FormField>
+
+            <div className="flex gap-3 mt-2">
+              <button type="submit" className="button gradient-button flex-1 py-3">Criar</button>
+              <button type="button" className="button secondary flex-1" onClick={closeModal}>
                 Cancelar
               </button>
             </div>
