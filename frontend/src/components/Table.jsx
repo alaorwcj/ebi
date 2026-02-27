@@ -10,7 +10,7 @@ import { useMediaQuery, MOBILE_BREAKPOINT } from "../hooks/useMediaQuery.js";
 
 function TableDesktop({ columns, rows, actions, loading }) {
   return (
-    <div className="table-desktop-wrapper relative w-full overflow-x-auto rounded-xl border border-border/50">
+    <div className="table-desktop-wrapper relative w-full overflow-hidden rounded-2xl border border-white/5 bg-slate-900/20">
       <ShadcnTable>
         <TableHeader>
           <TableRow>
@@ -113,10 +113,10 @@ function TableCards({ columns, rows, actions, loading }) {
       {rows.map((row) => (
         <article
           key={row.id}
-          className="table-card"
+          className="bg-slate-900/40 border border-white/5 rounded-2xl p-5 space-y-4 mb-4"
           role="listitem"
         >
-          <div className="table-card-fields">
+          <div className="table-card-fields grid grid-cols-2 gap-4">
             {columns.map((col) => (
               <div key={col.key} className="table-card-field">
                 <span className="table-card-label">{col.label}</span>

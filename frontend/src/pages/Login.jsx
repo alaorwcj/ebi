@@ -4,7 +4,6 @@ import { mensagemParaUsuario } from "../utils/apiErrors.js";
 import { toast } from "sonner";
 import { login, setAuth } from "../api/auth.js";
 import FormField from "../components/FormField.jsx";
-import { Mail, Lock, LogIn } from "lucide-react";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -14,104 +13,92 @@ export default function Login() {
 
   async function handleSubmit(event) {
     event.preventDefault();
-    if (!email?.trim()) {
-      toast.error("Informe o email.");
-      return;
-    }
-    if (!password) {
-      toast.error("Informe a senha.");
-      return;
-    }
-    if (password.length < 8) {
-      toast.error("A senha deve ter no mínimo 8 caracteres.");
-      return;
-    }
+    if (!email?.trim()) return toast.error("Informe o email.");
+    if (!password) return toast.error("Informe a senha.");
+    if (password.length < 8) return toast.error("A senha deve ter no mínimo 8 caracteres.");
+    if (!/[a-zA-Z]/.test(password) || !/[0-9]/.test(password))
+      return toast.error("A senha deve conter letras e números.");
+
     setLoading(true);
     try {
       const payload = await login(email, password);
       setAuth(payload.access_token, payload.role, payload.user_id);
-      toast.success("Login realizado com sucesso.");
+      toast.success("Bem-vinda de volta!");
       navigate("/ebis");
     } catch (err) {
-      toast.error(mensagemParaUsuario(err, "Falha no login. Verifique email e senha."));
+      toast.error(mensagemParaUsuario(err, "Falha no login. Verifique as credenciais."));
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <main className="login-page">
-      <style>{`
-        #login-card-inner {
-          background: rgba(10, 10, 15, 0.98) !important;
-          border: 1px solid rgba(255, 255, 255, 0.2) !important;
-          box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.9) !important;
-        }
-        #login-card-inner label {
-          color: #ffffff !important;
-          font-weight: 800 !important;
-          font-size: 0.85rem !important;
-          text-transform: uppercase !important;
-          letter-spacing: 0.05em !important;
-          opacity: 1 !important;
-        }
-        #login-card-inner input {
-          background: rgba(255, 255, 255, 0.1) !important;
-          border: 1px solid rgba(255, 255, 255, 0.3) !important;
-          color: #ffffff !important;
-          height: 56px !important;
-        }
-        #login-card-inner input::placeholder {
-          color: rgba(255, 255, 255, 0.5) !important;
-        }
-      `}</style>
+    <main className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-[#09090b]">
+      {/* Background Blobs */}
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-[120px] animate-pulse"></div>
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent-purple/20 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }}></div>
 
-      <div id="login-card-inner" className="login-card glass relative z-10 flex flex-col items-center gap-6">
-        <header className="flex flex-col items-center gap-3 w-full">
-          <img
-            src="/img/Logo_oficial_CCB.png"
-            alt="Logo CCB"
-            className="login-logo mb-2"
-            style={{ filter: "brightness(0) invert(1)" }}
-          />
-          <h2 className="login-title">Login</h2>
-          <p className="login-subtitle">EBI Vila Paula</p>
+      <div className="glass w-full max-w-md p-8 md:p-10 space-y-8 relative z-10">
+        <header className="flex flex-col items-center text-center space-y-4">
+          <div className="w-20 h-20 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10 shadow-2xl overflow-hidden mb-2">
+            <img
+              src="/img/Logo_oficial_CCB.png"
+              alt="Logo CCB"
+              className="w-14 h-14 object-contain brightness-0 invert"
+            />
+          </div>
+          <div>
+            <h2 className="text-3xl font-black text-white tracking-tight">EBI Management</h2>
+            <p className="text-slate-400 font-medium">Vila Paula - Gestão de Alunos</p>
+          </div>
         </header>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-5 w-full" noValidate>
-          <FormField
-            label="Email Institucional"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            type="email"
-            autoComplete="username"
-            icon={<Mail className="text-white/80" size={18} />}
-            placeholder="seu.nome@ebi.com"
-          />
-          <FormField
-            label="Senha de Acesso"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            type="password"
-            autoComplete="current-password"
-            icon={<Lock className="text-white/80" size={18} />}
-            placeholder="********"
-          />
+        <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+          <div className="space-y-4">
+            <FormField
+              label="Email Institucional"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              type="email"
+              autoComplete="username"
+              placeholder="seu.nome@ebi.com"
+              icon={<span className="material-symbols-outlined text-slate-500 text-[18px]">mail</span>}
+            />
+            <div className="space-y-1">
+              <FormField
+                label="Senha de Acesso"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                type="password"
+                autoComplete="current-password"
+                placeholder="••••••••"
+                icon={<span className="material-symbols-outlined text-slate-500 text-[18px]">lock</span>}
+              />
+              <div className="flex justify-end pr-1">
+                <button type="button" className="text-[10px] text-primary font-bold uppercase tracking-wider hover:text-white transition-colors">Esqueceu a senha?</button>
+              </div>
+            </div>
+          </div>
+
           <button
             type="submit"
             disabled={loading}
-            className="gradient-button w-full py-4 rounded-2xl flex items-center justify-center gap-2 font-bold text-white shadow-lg active:scale-95 transition-transform mt-2"
+            className="gradient-button w-full py-4 rounded-2xl flex items-center justify-center gap-3 font-bold text-white shadow-xl active:scale-95 transition-all mt-2 group"
           >
             {loading ? (
-              <span className="animate-pulse">Autenticando...</span>
+              <span className="material-symbols-outlined animate-spin">sync</span>
             ) : (
               <>
-                <LogIn size={20} />
-                <span>Entrar no Sistema</span>
+                <span>Acessar Dashboard</span>
+                <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
               </>
             )}
           </button>
         </form>
+
+        <footer className="pt-4 text-center">
+          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em]">Painel de Controle Administrativo</p>
+        </footer>
       </div>
     </main>
   );

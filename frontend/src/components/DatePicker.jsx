@@ -12,7 +12,6 @@ dayjs.locale("pt-br");
 const FORMATO = "DD/MM/YYYY";
 const DIAS_SEMANA = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
-/** Filtra o input para aceitar apenas dígitos e barras no formato DD/MM/AAAA */
 function filtrarInputData(valor) {
   const digits = valor.replace(/\D/g, "");
   if (digits.length <= 2) return digits;
@@ -97,88 +96,73 @@ export default function DatePicker({ label, value, onChange, id, className, erro
   };
 
   return (
-    <div className={cn("space-y-2", className)}>
+    <div className={cn("space-y-2 flex flex-col", className)} style={{ marginBottom: "16px" }}>
       {label && (
-        <Label htmlFor={fieldId} className={error ? "text-destructive" : ""}>
+        <Label htmlFor={fieldId} className={cn("label !text-white !opacity-100 !font-bold", error && "text-red-500")}>
           {label}
         </Label>
       )}
       <Popover.Root open={open} onOpenChange={setOpen} modal={false}>
-        <Popover.Trigger asChild>
-          <input
-            id={fieldId}
-            type="text"
-            placeholder="DD/MM/AAAA"
-            value={inputValue}
-            onChange={handleInputChange}
-            onFocus={() => setOpen(true)}
-            onClick={() => setOpen(true)}
-            readOnly={false}
-            maxLength={10}
-            inputMode="numeric"
-            className={cn(
-              "flex h-10 w-full rounded-xl border px-4 py-2 text-base transition-colors",
-              "border-input bg-transparent shadow-xs",
-              "focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring",
-              "aria-invalid:ring-destructive/20 aria-invalid:border-destructive",
-              "disabled:pointer-events-none disabled:opacity-50",
-              "placeholder:text-muted-foreground",
-              error && "border-destructive focus-visible:ring-destructive/20"
-            )}
-            style={{
-              background: "var(--panel)",
-              color: "var(--text)",
-              borderColor: "var(--border)"
-            }}
-          />
-        </Popover.Trigger>
+        <div className="relative group">
+          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-primary transition-colors pointer-events-none z-20">
+            <span className="material-symbols-outlined text-[18px]">calendar_today</span>
+          </div>
+          <Popover.Trigger asChild>
+            <input
+              id={fieldId}
+              type="text"
+              placeholder="DD/MM/AAAA"
+              value={inputValue}
+              onChange={handleInputChange}
+              onFocus={() => setOpen(true)}
+              onClick={() => setOpen(true)}
+              readOnly={false}
+              maxLength={10}
+              inputMode="numeric"
+              className={cn(
+                "w-full bg-slate-900/50 border border-white/5 rounded-2xl py-6 pl-12 pr-6 focus:ring-2 focus:ring-primary focus:border-transparent transition-all placeholder:text-slate-600 text-slate-100 placeholder:font-normal font-medium",
+                error && "border-red-500/10 focus:ring-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.1)]"
+              )}
+            />
+          </Popover.Trigger>
+        </div>
         <Popover.Portal>
           <Popover.Content
-            className="p-0 w-auto z-[100]"
+            className="p-0 w-auto z-[100] glass !bg-[#09090b]/95 !border-white/10 !shadow-2xl"
             align="start"
-            sideOffset={4}
+            sideOffset={8}
             onOpenAutoFocus={(e) => e.preventDefault()}
-            style={{
-              background: "var(--panel)",
-              color: "var(--text)",
-              border: "2px solid var(--border)",
-              borderRadius: "12px",
-              boxShadow: "0 10px 30px var(--shadow)",
-              zIndex: 100
-            }}
           >
-            <div className="pt-3 px-3">
-              <div className="flex justify-between items-center mb-3">
+            <div className="pt-4 px-4">
+              <div className="flex justify-between items-center mb-4">
                 <button
                   type="button"
                   onClick={() => setViewDate((d) => d.subtract(1, "month"))}
-                  className="h-7 w-7 rounded p-0 hover:bg-black/10 flex items-center justify-center"
-                  style={{ color: "var(--text)" }}
+                  className="h-8 w-8 rounded-lg hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-all"
                   aria-label="Mês anterior"
                 >
-                  ‹
+                  <span className="material-symbols-outlined text-[18px]">chevron_left</span>
                 </button>
-                <span className="font-semibold capitalize" style={{ color: "var(--text)" }}>
+                <span className="font-extrabold text-sm text-white capitalize tracking-tight">
                   {viewDate.format("MMMM YYYY")}
                 </span>
                 <button
                   type="button"
                   onClick={() => setViewDate((d) => d.add(1, "month"))}
-                  className="h-7 w-7 rounded p-0 hover:bg-black/10 flex items-center justify-center"
-                  style={{ color: "var(--text)" }}
+                  className="h-8 w-8 rounded-lg hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-all"
                   aria-label="Próximo mês"
                 >
-                  ›
+                  <span className="material-symbols-outlined text-[18px]">chevron_right</span>
                 </button>
               </div>
-              <div className="grid grid-cols-7 gap-0.5 mb-2">
+              <div className="grid grid-cols-7 gap-1 mb-4">
                 {DIAS_SEMANA.map((dia) => (
-                  <div key={dia} className="w-9 h-9 flex items-center justify-center text-sm text-muted-foreground">
+                  <div key={dia} className="w-10 h-10 flex items-center justify-center text-[10px] uppercase font-black tracking-widest text-slate-600">
                     {dia}
                   </div>
                 ))}
                 {days.map((d, i) => {
-                  if (!d) return <div key={`empty-${i}`} className="w-9 h-9" />;
+                  if (!d) return <div key={`empty-${i}`} className="w-10 h-10" />;
                   const isSelected = selectedDate && d.isSame(selectedDate, "day");
                   const isToday = d.isSame(dayjs(), "day");
                   const disabled = isDayDisabled(d);
@@ -189,36 +173,30 @@ export default function DatePicker({ label, value, onChange, id, className, erro
                       onClick={() => !disabled && handleSelect(d)}
                       disabled={disabled}
                       className={cn(
-                        "w-9 h-9 rounded text-sm",
-                        isSelected && "text-white",
-                        !isSelected && !disabled && "hover:bg-black/10",
-                        disabled && "opacity-40 cursor-not-allowed"
+                        "w-10 h-10 rounded-xl text-xs font-bold transition-all",
+                        isSelected && "bg-primary text-white shadow-lg shadow-primary/30",
+                        !isSelected && !disabled && "hover:bg-white/10 text-slate-300",
+                        isToday && !isSelected && "border border-primary/30 text-primary",
+                        disabled && "opacity-20 cursor-not-allowed"
                       )}
-                      style={
-                        isSelected
-                          ? { background: "var(--accent)", color: "white" }
-                          : { color: "var(--text)" }
-                      }
                     >
-                      {isToday ? <strong>{d.date()}</strong> : d.date()}
+                      {d.date()}
                     </button>
                   );
                 })}
               </div>
             </div>
-            <div className="flex gap-2 p-3 border-t" style={{ borderColor: "var(--border)" }}>
+            <div className="flex gap-2 p-4 border-t border-white/5 bg-white/5">
               <button
                 type="button"
-                className="text-sm px-3 py-1.5 rounded hover:bg-black/10"
-                style={{ color: "var(--text)" }}
+                className="text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-all flex-1"
                 onClick={handleToday}
               >
                 Hoje
               </button>
               <button
                 type="button"
-                className="text-sm px-3 py-1.5 rounded hover:bg-black/10"
-                style={{ color: "var(--text)" }}
+                className="text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-lg bg-white/5 text-slate-400 hover:bg-white/10 transition-all flex-1"
                 onClick={handleClear}
               >
                 Limpar
@@ -228,7 +206,7 @@ export default function DatePicker({ label, value, onChange, id, className, erro
         </Popover.Portal>
       </Popover.Root>
       {error && (
-        <p className="text-sm text-destructive" role="alert">
+        <p className="text-sm text-red-500 mt-1 font-medium" role="alert">
           {error}
         </p>
       )}

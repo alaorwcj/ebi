@@ -14,13 +14,6 @@ export function useMenu() {
       { label: "Crianças", icon: "Users", path: "/children" },
       { label: "Meu Perfil", icon: "User", path: "/profile" },
       { label: "Usuários", icon: "UsersRound", path: "/users" },
-      { label: "Relatório Geral", icon: "FileText", path: "/reports/general" },
-      // {
-      //   label: "Relatórios",
-      //   icon: "BarChart3",
-      //   subItems: [
-      //   ],
-      // },
     ];
 
     const coordItems = [

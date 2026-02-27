@@ -1,6 +1,7 @@
 import { Route, Routes, Navigate } from "react-router-dom";
 import Layout from "./components/Layout.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import RoleRoute from "./components/RoleRoute.jsx";
 import Login from "./pages/Login.jsx";
 import Profile from "./pages/Profile.jsx";
 import Users from "./pages/Users.jsx";
@@ -24,12 +25,33 @@ export default function App() {
       >
         <Route index element={<Navigate to="/ebis" replace />} />
         <Route path="/profile" element={<Profile />} />
-        <Route path="/users" element={<Users />} />
+        <Route
+          path="/users"
+          element={
+            <RoleRoute allowed={["ADMINISTRADOR"]}>
+              <Users />
+            </RoleRoute>
+          }
+        />
         <Route path="/children" element={<Children />} />
         <Route path="/ebis" element={<Ebis />} />
         <Route path="/ebis/:id" element={<EbiDetail />} />
-        <Route path="/reports/ebi/:id" element={<EbiReport />} />
-        <Route path="/reports/general" element={<GeneralReport />} />
+        <Route
+          path="/reports/ebi/:id"
+          element={
+            <RoleRoute allowed={["COORDENADORA"]}>
+              <EbiReport />
+            </RoleRoute>
+          }
+        />
+        <Route
+          path="/reports/general"
+          element={
+            <RoleRoute allowed={["COORDENADORA"]}>
+              <GeneralReport />
+            </RoleRoute>
+          }
+        />
       </Route>
     </Routes>
   );

@@ -1,4 +1,6 @@
 from functools import lru_cache
+from typing import Any
+from pydantic import field_validator
 from pydantic_settings import BaseSettings
 
 
@@ -15,7 +17,17 @@ class Settings(BaseSettings):
     db_user: str = "ebi_user"
     db_pass: str = "ebi_pass"
 
-    cors_origins: list[str] = ["http://localhost:5173", "http://localhost:4173"]
+    @property
+    def cors_origins(self) -> list[str]:
+        import os
+        import json
+        v = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:4173")
+        if v.startswith("["):
+            try:
+                return json.loads(v)
+            except:
+                pass
+        return [i.strip() for i in v.split(",") if i.strip()]
 
     allow_bootstrap: bool = True
 

@@ -27,6 +27,7 @@ services:
       DB_USER: ${DB_USER:-ebi_user}
       DB_PASS: ${DB_PASS:-ebi_pass}
       ALLOW_BOOTSTRAP: ${ALLOW_BOOTSTRAP:-true}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173}
     ports:
       - "8000:8000"
     depends_on:

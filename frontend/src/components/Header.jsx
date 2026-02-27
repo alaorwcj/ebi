@@ -1,31 +1,29 @@
 import { useNavigate } from "react-router-dom";
 import { getRole } from "../api/auth.js";
-import { Bell, BookOpen } from "lucide-react";
 
 export default function Header() {
   const navigate = useNavigate();
   const role = getRole();
-  const roleLabel = role === "ADMINISTRADOR"
-    ? "Administrador"
-    : role === "COORDENADORA"
-      ? "Coordenadora"
-      : "Colaboradora";
+  const roleLabel =
+    role === "ADMINISTRADOR"
+      ? "Administrador"
+      : role === "COORDENADORA"
+        ? "Coordenadora"
+        : "Colaboradora";
 
   return (
     <header className="sticky top-0 z-50 glass px-6 py-4 flex items-center justify-between">
       <div className="flex items-center gap-3">
-        <BookOpen className="text-primary" size={28} />
-        <h1 className="text-2xl font-extrabold tracking-tight text-white">EBIs</h1>
+        <span className="material-symbols-outlined text-primary text-3xl">auto_stories</span>
+        <h1 className="text-2xl font-extrabold tracking-tight">EBIs</h1>
       </div>
-
       <div className="flex items-center gap-4">
         <button className="relative p-2 text-slate-400 hover:text-primary transition-colors">
-          <Bell size={24} />
-          <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-[#09090b]"></span>
+          <span className="material-symbols-outlined">notifications</span>
+          <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-background-dark"></span>
         </button>
-
         <div
-          className="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center overflow-hidden cursor-pointer hover:border-primary transition-colors"
+          className="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center overflow-hidden cursor-pointer"
           onClick={() => navigate("/profile")}
           title={roleLabel}
         >

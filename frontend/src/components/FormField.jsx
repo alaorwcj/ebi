@@ -28,7 +28,7 @@ export default function FormField({ label, error, required, id, icon, labelProps
           id={fieldId}
           aria-invalid={Boolean(error)}
           aria-describedby={error ? `${fieldId}-error` : undefined}
-          className={`input !text-white !bg-white/10 !border-white/20 !placeholder-white/40 ${icon ? "pl-12" : ""} ${error ? "border-destructive focus-visible:ring-destructive/20" : ""}`}
+          className={`w-full bg-slate-900/50 border border-white/5 rounded-2xl py-6 ${icon ? "pl-12" : "pl-6"} pr-6 focus:ring-2 focus:ring-primary focus:border-transparent transition-all placeholder:text-slate-600 text-slate-100 placeholder:font-normal font-medium ${error ? "border-red-500/10 focus:ring-red-500/20" : ""}`}
           {...inputProps}
           {...props}
         />

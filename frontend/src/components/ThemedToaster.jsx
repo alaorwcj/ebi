@@ -1,27 +1,16 @@
-import { useState, useEffect } from "react";
 import { Toaster } from "sonner";
 
 export default function ThemedToaster() {
-  const [theme, setTheme] = useState(() =>
-    document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light"
-  );
-
-  useEffect(() => {
-    const handler = () => {
-      setTheme(document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light");
-    };
-    window.addEventListener("theme-change", handler);
-    return () => window.removeEventListener("theme-change", handler);
-  }, []);
-
+  // O sistema agora é forçado Dark por padrão conforme o Redesign Stitch
   return (
     <Toaster
-      theme={theme}
+      theme="dark"
       position="top-right"
       richColors
       closeButton
       toastOptions={{
         duration: 4000,
+        className: "glass !border-white/10 !bg-[#09090b]/90 !text-white !font-medium",
       }}
     />
   );
