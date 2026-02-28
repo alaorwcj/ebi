@@ -57,7 +57,7 @@ def list_ebi_api(
 def create_ebi_api(
     payload: EbiCreate,
     db: Session = Depends(get_db),
-    _=Depends(require_role(UserRole.COORDENADORA)),
+    _=Depends(require_role(UserRole.COORDENADORA, UserRole.ADMINISTRADOR)),
 ):
     ebi = create_new_ebi(db, payload)
     return _ebi_to_out(ebi)
@@ -83,7 +83,7 @@ def update_ebi_api(
     ebi_id: int,
     payload: EbiUpdate,
     db: Session = Depends(get_db),
-    _=Depends(require_role(UserRole.COORDENADORA)),
+    _=Depends(require_role(UserRole.COORDENADORA, UserRole.ADMINISTRADOR)),
 ):
     ebi = update_existing_ebi(db, ebi_id, payload)
     return _ebi_to_out(ebi)
@@ -115,7 +115,7 @@ def checkout_presence_api(
 def close_ebi_api(
     ebi_id: int,
     db: Session = Depends(get_db),
-    _=Depends(require_role(UserRole.COORDENADORA)),
+    _=Depends(require_role(UserRole.COORDENADORA, UserRole.ADMINISTRADOR)),
 ):
     ebi = close_ebi(db, ebi_id)
     return _ebi_to_out(ebi)
@@ -126,7 +126,7 @@ def reopen_ebi_api(
     ebi_id: int,
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
-    _=Depends(require_role(UserRole.COORDENADORA)),
+    _=Depends(require_role(UserRole.COORDENADORA, UserRole.ADMINISTRADOR)),
 ):
     ebi = reopen_ebi(db, ebi_id, current_user.id)
     return _ebi_to_out(ebi)

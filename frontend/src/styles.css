@@ -730,3 +730,19 @@ label,
 .sidebar-wpay {
   display: none !important;
 }
+/* ============================================================
+   DIALOG ANIMATIONS (replaces tailwindcss-animate dependency)
+   ============================================================ */
+@keyframes dialog-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes dialog-zoom-in {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.95); }
+  to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+/* Ensure dialog always renders above sidebar and bottom nav */
+[data-slot="dialog-overlay"] { z-index: 9000 !important; }
+[data-slot="dialog-content"]  { z-index: 9001 !important; }

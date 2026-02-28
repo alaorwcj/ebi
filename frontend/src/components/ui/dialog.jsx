@@ -38,11 +38,8 @@ function DialogOverlay({
   return (
     <DialogPrimitive.Overlay
       data-slot="dialog-overlay"
-      className={cn(
-        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50",
-        className
-      )}
-      style={{ background: "rgba(0, 0, 0, 0.65)" }}
+      className={cn("fixed inset-0 z-50", className)}
+      style={{ background: "rgba(0, 0, 0, 0.65)", animation: "dialog-fade-in 0.15s ease" }}
       {...props} />
   );
 }
@@ -59,14 +56,15 @@ function DialogContent({
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-2xl border p-6 duration-200 outline-none sm:max-w-lg",
+          "fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-2xl border p-6 outline-none sm:max-w-lg",
           className
         )}
         style={{
           background: "var(--panel)",
           color: "var(--text)",
           borderColor: "var(--border)",
-          boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.35)"
+          boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.35)",
+          animation: "dialog-zoom-in 0.2s cubic-bezier(0.16, 1, 0.3, 1)"
         }}
         {...props}>
         {children}
@@ -84,6 +82,7 @@ function DialogContent({
     </DialogPortal>
   );
 }
+
 
 function DialogHeader({
   className,

@@ -27,10 +27,12 @@ def get_current_user(
     return user
 
 
-def require_role(role: UserRole):
+def require_role(*roles: UserRole):
+    """Accept one or more roles. User must have at least one of them."""
     def checker(user=Depends(get_current_user)):
-        if user.role != role:
+        if user.role not in roles:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
         return user
 
     return checker
+
