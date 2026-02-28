@@ -107,7 +107,7 @@ def checkout_presence_api(
     db: Session = Depends(get_db),
     _=Depends(get_current_user),
 ):
-    presence = checkout_presence(db, presence_id, payload.pin_code)
+    presence = checkout_presence(db, presence_id, payload.pin_code, payload.checkout_justification)
     return _presence_to_out(presence)
 
 

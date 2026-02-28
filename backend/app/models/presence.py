@@ -17,6 +17,7 @@ class EbiPresence(Base, TimestampMixin):
     entry_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     exit_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     pin_code: Mapped[str] = mapped_column(String(4), nullable=False)
+    checkout_justification: Mapped[str | None] = mapped_column(String(500), nullable=True)
 
     ebi = relationship("Ebi", back_populates="presences")
     child = relationship("Child")
@@ -25,3 +26,4 @@ class EbiPresence(Base, TimestampMixin):
 Index("ix_presence_ebi", EbiPresence.ebi_id)
 Index("ix_presence_child", EbiPresence.child_id)
 UniqueConstraint("ebi_id", "child_id", name="uq_presence_ebi_child")
+

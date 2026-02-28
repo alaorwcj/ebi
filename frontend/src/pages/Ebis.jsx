@@ -86,7 +86,7 @@ export default function Ebis() {
             onKeyDown={handleSearch}
           />
         </div>
-        {role === "COORDENADORA" && (
+        {(role === "COORDENADORA" || role === "ADMINISTRADOR") && (
           <button
             onClick={openCreateModal}
             className="gradient-button w-full py-4 rounded-2xl flex items-center justify-center gap-2 font-bold text-white shadow-lg shadow-primary/20 active:scale-95 transition-transform"
@@ -141,7 +141,7 @@ export default function Ebis() {
                   <span className="material-symbols-outlined text-sm">open_in_new</span>
                   Abrir
                 </Link>
-                {role === "COORDENADORA" && (
+                {(role === "COORDENADORA" || role === "ADMINISTRADOR") && (
                   <Link to={`/reports/ebi/${item.id}`} className="flex-1 py-2.5 rounded-xl bg-slate-100/5 border border-white/10 flex items-center justify-center gap-2 text-sm font-medium hover:bg-white/10 transition-colors text-white">
                     <span className="material-symbols-outlined text-sm">bar_chart</span>
                     Relatório
@@ -170,7 +170,7 @@ export default function Ebis() {
         </button>
       </div>
 
-      {role === "COORDENADORA" && (
+      {(role === "COORDENADORA" || role === "ADMINISTRADOR") && (
         <Modal
           open={modalOpen}
           title="Criar EBI"

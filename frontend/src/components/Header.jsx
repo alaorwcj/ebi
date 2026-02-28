@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { Bell, BookOpen, User } from "lucide-react";
 import { getRole } from "../api/auth.js";
 
 export default function Header() {
@@ -12,26 +13,27 @@ export default function Header() {
         : "Colaboradora";
 
   return (
-    <header className="sticky top-0 z-50 glass px-6 py-4 flex items-center justify-between">
-      <div className="flex items-center gap-3">
-        <span className="material-symbols-outlined text-primary text-3xl">auto_stories</span>
-        <h1 className="text-2xl font-extrabold tracking-tight">EBIs</h1>
+    <header className="app-header">
+      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+        <BookOpen size={22} color="var(--primary)" strokeWidth={2.5} />
+        <h1 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 800, letterSpacing: "-0.02em", color: "var(--text)" }}>
+          EBI Vila Paula
+        </h1>
       </div>
-      <div className="flex items-center gap-4">
-        <button className="relative p-2 text-slate-400 hover:text-primary transition-colors">
-          <span className="material-symbols-outlined">notifications</span>
-          <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-background-dark"></span>
+      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+        <button
+          style={{ position: "relative", padding: "8px", color: "var(--muted)", background: "none", border: "none", cursor: "pointer", borderRadius: "50%" }}
+          title="Notificações"
+        >
+          <Bell size={20} strokeWidth={2} />
+          <span style={{ position: "absolute", top: "8px", right: "8px", width: "7px", height: "7px", background: "#ef4444", borderRadius: "50%", border: "2px solid var(--background-dark)" }} />
         </button>
         <div
-          className="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center overflow-hidden cursor-pointer"
+          style={{ width: "36px", height: "36px", borderRadius: "50%", background: "rgba(37,71,244,0.15)", border: "1.5px solid rgba(37,71,244,0.3)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
           onClick={() => navigate("/profile")}
           title={roleLabel}
         >
-          <img
-            alt="User profile"
-            className="w-full h-full object-cover"
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuAYqNuSy071Gnn3BoqpKurlOVhQ9P0EWwjvpRqP_K98LssCn6vakjYTfu_3UqrY9v0IRnftMjNXa9922x7lj5dUAfYbgnQmob5CsvvQUtreiAnHUDXUfmo6pO2PdKUE00EBtwcZ4gM9sFHjqfqTG30WoDzptVJjDXl9M9VcVJmoFA9xlJomZxPUJyEEg0qfJqfh5RoAl9rbtH9vIluRP9f6D7goFbdIX2-AZw1p8wRLuNcZemX7wOg-HEDvw-USH8QmALMxNb21J6PD"
-          />
+          <User size={18} color="var(--primary)" strokeWidth={2} />
         </div>
       </div>
     </header>

@@ -102,7 +102,7 @@ def add_presence(db: Session, ebi_id: int, presence_in) -> EbiPresence:
     return presence
 
 
-def checkout_presence(db: Session, presence_id: int, pin_code: str) -> EbiPresence:
+def checkout_presence(db: Session, presence_id: int, pin_code: str | None, checkout_justification: str | None = None) -> EbiPresence:
     presence = get_presence_by_id(db, presence_id)
     if not presence:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Presence not found")
@@ -114,11 +114,19 @@ def checkout_presence(db: Session, presence_id: int, pin_code: str) -> EbiPresen
     if presence.exit_at:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Already checked out")
 
-    if presence.pin_code != pin_code:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid pin")
+    if pin_code:
+        # Normal PIN flow
+        if presence.pin_code != pin_code:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid pin")
+    else:
+        # PIN-free override — justification is required (validated at schema level)
+        if not checkout_justification or len(checkout_justification.strip()) < 10:
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Justificativa obrigatória")
+        presence.checkout_justification = checkout_justification.strip()
 
     presence.exit_at = datetime.now(timezone.utc)
     return update_presence(db, presence)
+
 
 
 def close_ebi(db: Session, ebi_id: int) -> Ebi:

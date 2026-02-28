@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useCallback } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   Calendar,
@@ -6,17 +6,12 @@ import {
   User,
   FolderPlus,
   UsersRound,
-  BarChart3,
   FileText,
   LogOut,
-  Menu,
-  ChevronDown,
-  ChevronUp,
+  BarChart2,
 } from "lucide-react";
 import { useMenu } from "../hooks/useMenu.js";
-import { SidebarIconBox } from "./SidebarIconBox.jsx";
 import { clearAuth, getRole } from "../api/auth.js";
-import { useMediaQuery, MOBILE_BREAKPOINT } from "../hooks/useMediaQuery.js";
 
 const ICON_MAP = {
   Calendar,
@@ -24,235 +19,96 @@ const ICON_MAP = {
   User,
   FolderPlus,
   UsersRound,
-  BarChart3,
   FileText,
+  BarChart3: BarChart2,
 };
 
-function MenuIcon({ name, size = 22 }) {
+function MenuIcon({ name, size = 20 }) {
   const Icon = ICON_MAP[name] || User;
   return <Icon size={size} strokeWidth={2} aria-hidden />;
 }
 
-export default function Sidebar({
-  collapsed: controlledCollapsed,
-  onToggleCollapse,
-  mobileOpen,
-  onMobileToggle,
-}) {
+export default function Sidebar() {
   const navigate = useNavigate();
   const { menuItems } = useMenu();
-  const [expandedMenus, setExpandedMenus] = useState(new Set());
-  const isMobile = useMediaQuery(MOBILE_BREAKPOINT);
-
-  const isExpanded = controlledCollapsed === false;
-
-  const toggleSidebar = useCallback(() => {
-    if (isExpanded) setExpandedMenus(new Set());
-    onToggleCollapse?.();
-  }, [isExpanded, onToggleCollapse]);
-
-  const isSubmenuExpanded = useCallback(
-    (label) => expandedMenus.has(label),
-    [expandedMenus]
-  );
-
-  const toggleSubmenu = useCallback(
-    (menuLabel) => {
-      if (!isExpanded) onToggleCollapse?.();
-      setExpandedMenus((prev) => {
-        const next = new Set(prev);
-        if (next.has(menuLabel)) next.delete(menuLabel);
-        else next.add(menuLabel);
-        return next;
-      });
-    },
-    [isExpanded, onToggleCollapse]
-  );
-
-  const handleLogout = useCallback(() => {
-    clearAuth();
-    navigate("/login");
-    onMobileToggle?.();
-  }, [navigate, onMobileToggle]);
-
-  const navigateToProfile = useCallback(() => {
-    navigate("/profile");
-    onMobileToggle?.();
-  }, [navigate, onMobileToggle]);
-
   const role = getRole();
-  const userName =
+
+  const roleLabel =
     role === "ADMINISTRADOR"
       ? "Administrador"
       : role === "COORDENADORA"
         ? "Coordenadora"
         : "Colaboradora";
-  const profileImageUrl = null; // opcional: URL da foto do usuário
+
+  const handleLogout = useCallback(() => {
+    clearAuth();
+    navigate("/login");
+  }, [navigate]);
 
   return (
-    <>
-      <button
-        type="button"
-        className="sidebar-wpay-mobile-trigger"
-        onClick={onMobileToggle}
-        aria-label="Abrir menu"
-        aria-expanded={mobileOpen}
-      >
-        <Menu size={24} strokeWidth={2} aria-hidden />
-      </button>
-      <div
-        className={`sidebar-wpay-overlay ${mobileOpen ? "sidebar-wpay-overlay--open" : ""}`}
-        onClick={onMobileToggle}
-        aria-hidden
-      />
-      <section
-        id="sidebar-wpay-content"
-        className={`sidebar-wpay ${isExpanded || mobileOpen ? "sidebar-wpay--expanded" : ""} ${mobileOpen ? "sidebar-wpay--mobile-open" : ""}`}
-      >
-        {/* Botão hamburger: no mobile abre/fecha overlay; no desktop expande/recolhe a pill */}
-        <div
-          id="sidebar-wpay-logo"
-          className="sidebar-wpay-logo"
-          onClick={() => {
-            if (isMobile) {
-              onMobileToggle?.();
-            } else {
-              if (mobileOpen) onMobileToggle?.();
-              else toggleSidebar();
+    <aside className="nav-sidebar">
+      {/* Logo / Brand */}
+      <div className="nav-sidebar-brand">
+        <div className="nav-sidebar-logo">
+          <img
+            src="/img/Logo_oficial_CCB.png"
+            alt="EBI"
+            className="w-7 h-7 object-contain brightness-0 invert"
+            onError={(e) => { e.target.style.display = "none"; }}
+          />
+        </div>
+        <div className="nav-sidebar-brand-text">
+          <span className="nav-sidebar-brand-name">EBI Vila Paula</span>
+          <span className="nav-sidebar-role">{roleLabel}</span>
+        </div>
+      </div>
+
+      {/* Divider */}
+      <div className="nav-sidebar-divider" />
+
+      {/* Menu items */}
+      <nav className="nav-sidebar-menu">
+        {menuItems.map((item) => (
+          <NavLink
+            key={item.label}
+            to={item.path}
+            className={({ isActive }) =>
+              `nav-sidebar-item ${isActive ? "nav-sidebar-item--active" : ""}`
             }
-          }}
-          onKeyDown={(e) => {
-            if (e.key !== "Enter" && e.key !== " ") return;
-            if (isMobile) onMobileToggle?.();
-            else {
-              if (mobileOpen) onMobileToggle?.();
-              else toggleSidebar();
-            }
-          }}
-          role="button"
-          tabIndex={0}
-          aria-label={
-            isMobile
-              ? mobileOpen
-                ? "Fechar menu"
-                : "Abrir menu"
-              : mobileOpen
-                ? "Fechar menu"
-                : isExpanded
-                  ? "Recolher menu"
-                  : "Expandir menu"
+          >
+            <span className="nav-sidebar-item-icon">
+              <MenuIcon name={item.icon} size={20} />
+            </span>
+            <span className="nav-sidebar-item-label">{item.label}</span>
+          </NavLink>
+        ))}
+      </nav>
+
+      {/* Footer */}
+      <div className="nav-sidebar-footer">
+        <div className="nav-sidebar-divider" />
+        <NavLink
+          to="/profile"
+          className={({ isActive }) =>
+            `nav-sidebar-item ${isActive ? "nav-sidebar-item--active" : ""}`
           }
         >
-          <Menu size={24} strokeWidth={2} aria-hidden className="sidebar-wpay-logo-icon" />
-        </div>
-
-        {/* Área de menus (scroll) */}
-        <div id="sidebar-wpay-menus" className="sidebar-wpay-menus">
-          <ul>
-            {menuItems.map((menu) => (
-              <li key={menu.label} className="sidebar-wpay-menu-wrapper">
-                {!menu.subItems?.length ? (
-                  <NavLink
-                    to={menu.path}
-                    className={({ isActive }) =>
-                      `sidebar-wpay-menu-item ${isActive ? "sidebar-wpay-menu-item--active" : ""}`
-                    }
-                    onClick={() => {
-                      if (mobileOpen) onMobileToggle?.();
-                    }}
-                  >
-                    <SidebarIconBox size="medium">
-                      <MenuIcon name={menu.icon} />
-                    </SidebarIconBox>
-                    <span className="sidebar-wpay-label">{menu.label}</span>
-                  </NavLink>
-                ) : (
-                  <>
-                    <div
-                      className={`sidebar-wpay-menu-item sidebar-wpay-menu-item--has-submenu ${isSubmenuExpanded(menu.label) ? "sidebar-wpay-menu-item--submenu-open" : ""}`}
-                      onClick={() => toggleSubmenu(menu.label)}
-                      onKeyDown={(e) =>
-                        (e.key === "Enter" || e.key === " ") && toggleSubmenu(menu.label)
-                      }
-                      role="button"
-                      tabIndex={0}
-                    >
-                      <SidebarIconBox size="medium">
-                        <MenuIcon name={menu.icon} />
-                      </SidebarIconBox>
-                      <span className="sidebar-wpay-label">{menu.label}</span>
-                      {isExpanded &&
-                        (isSubmenuExpanded(menu.label) ? (
-                          <ChevronUp size={16} className="sidebar-wpay-chevron" aria-hidden />
-                        ) : (
-                          <ChevronDown size={16} className="sidebar-wpay-chevron" aria-hidden />
-                        ))}
-                    </div>
-                    <ul
-                      className={`sidebar-wpay-submenu ${isSubmenuExpanded(menu.label) ? "sidebar-wpay-submenu--expanded" : ""}`}
-                    >
-                      {menu.subItems.map((sub) => (
-                        <li key={sub.label} className="sidebar-wpay-submenu-item">
-                          <NavLink
-                            to={sub.path}
-                            className={({ isActive }) =>
-                              `sidebar-wpay-submenu-link ${isActive ? "sidebar-wpay-submenu-link--active" : ""}`
-                            }
-                            onClick={() => {
-                              if (mobileOpen) onMobileToggle?.();
-                            }}
-                          >
-                            <SidebarIconBox size="small">
-                              <MenuIcon name={sub.icon} size={16} />
-                            </SidebarIconBox>
-                            <span className="sidebar-wpay-label">{sub.label}</span>
-                          </NavLink>
-                        </li>
-                      ))}
-                    </ul>
-                  </>
-                )}
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Footer fixo */}
-        <div id="sidebar-wpay-footer" className="sidebar-wpay-footer">
-          <ul>
-            <li>
-              <button
-                type="button"
-                className="sidebar-wpay-menu-item sidebar-wpay-footer-logout"
-                onClick={handleLogout}
-              >
-                <SidebarIconBox size="medium">
-                  <LogOut size={22} strokeWidth={2} aria-hidden />
-                </SidebarIconBox>
-                <span className="sidebar-wpay-label">Sair</span>
-              </button>
-            </li>
-          </ul>
-          <div
-            className="sidebar-wpay-user-profile"
-            onClick={navigateToProfile}
-            onKeyDown={(e) =>
-              (e.key === "Enter" || e.key === " ") && navigateToProfile()
-            }
-            role="button"
-            tabIndex={0}
-          >
-            {profileImageUrl ? (
-              <img src={profileImageUrl} alt="" className="sidebar-wpay-user-avatar" />
-            ) : (
-              <div className="sidebar-wpay-user-placeholder">
-                <User size={22} strokeWidth={2} aria-hidden />
-              </div>
-            )}
-            <span className="sidebar-wpay-label sidebar-wpay-user-name">{userName}</span>
-          </div>
-        </div>
-      </section>
-    </>
+          <span className="nav-sidebar-item-icon">
+            <User size={20} strokeWidth={2} aria-hidden />
+          </span>
+          <span className="nav-sidebar-item-label">Meu Perfil</span>
+        </NavLink>
+        <button
+          type="button"
+          className="nav-sidebar-item nav-sidebar-logout"
+          onClick={handleLogout}
+        >
+          <span className="nav-sidebar-item-icon">
+            <LogOut size={20} strokeWidth={2} aria-hidden />
+          </span>
+          <span className="nav-sidebar-item-label">Sair</span>
+        </button>
+      </div>
+    </aside>
   );
 }

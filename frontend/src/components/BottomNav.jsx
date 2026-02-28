@@ -1,39 +1,59 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import { useMenu } from "../hooks/useMenu.js";
+import { clearAuth } from "../api/auth.js";
 
-const navItems = [
-    { label: "EBIs", path: "/ebis", icon: "dashboard" },
-    { label: "Crianças", path: "/children", icon: "child_care" },
-    { label: "Usuários", path: "/users", icon: "group" },
-    { label: "Reports", path: "/reports/general", icon: "pie_chart" },
-    { label: "Perfil", path: "/profile", icon: "account_circle" },
-];
+// Icon map for bottom nav
+const ICON_NAMES = {
+    Calendar: "calendar_month",
+    Users: "child_care",
+    User: "account_circle",
+    UsersRound: "group",
+    FileText: "bar_chart",
+};
 
 export default function BottomNav() {
+    const navigate = useNavigate();
+    const { menuItems } = useMenu();
+
+    function handleLogout() {
+        clearAuth();
+        navigate("/login");
+    }
+
     return (
-        <nav className="fixed bottom-0 left-0 right-0 glass border-t border-white/10 px-2 pb-6 pt-3 flex justify-around items-center md:hidden z-[1000]">
-            {navItems.map((item) => (
+        <nav className="mobile-bottom-nav">
+            {menuItems.map((item) => (
                 <NavLink
                     key={item.label}
                     to={item.path}
                     end={item.path === "/ebis"}
                     className={({ isActive }) =>
-                        `flex flex-col items-center gap-1 transition-colors ${isActive ? "text-primary fill-[1]" : "text-slate-500"
-                        }`
+                        `mobile-bottom-nav-item ${isActive ? "mobile-bottom-nav-item--active" : ""}`
                     }
                 >
                     {({ isActive }) => (
                         <>
                             <span
-                                className="material-symbols-outlined text-[28px]"
+                                className="material-symbols-outlined"
                                 style={isActive ? { fontVariationSettings: "'FILL' 1" } : {}}
                             >
-                                {item.icon}
+                                {ICON_NAMES[item.icon] || "circle"}
                             </span>
-                            <span className="text-[10px] font-bold uppercase">{item.label}</span>
+                            <span>{item.label}</span>
                         </>
                     )}
                 </NavLink>
             ))}
+
+            {/* Logout always visible */}
+            <button
+                type="button"
+                className="mobile-bottom-nav-item mobile-bottom-nav-item--logout"
+                onClick={handleLogout}
+            >
+                <span className="material-symbols-outlined">logout</span>
+                <span>Sair</span>
+            </button>
         </nav>
     );
 }

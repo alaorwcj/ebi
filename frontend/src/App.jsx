@@ -39,7 +39,7 @@ export default function App() {
         <Route
           path="/reports/ebi/:id"
           element={
-            <RoleRoute allowed={["COORDENADORA"]}>
+            <RoleRoute allowed={["COORDENADORA", "ADMINISTRADOR"]}>
               <EbiReport />
             </RoleRoute>
           }
@@ -47,7 +47,7 @@ export default function App() {
         <Route
           path="/reports/general"
           element={
-            <RoleRoute allowed={["COORDENADORA"]}>
+            <RoleRoute allowed={["COORDENADORA", "ADMINISTRADOR"]}>
               <GeneralReport />
             </RoleRoute>
           }

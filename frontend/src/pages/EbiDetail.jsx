@@ -22,6 +22,8 @@ export default function EbiDetail() {
   const [confirmId, setConfirmId] = useState(null);
   const [reopenOpen, setReopenOpen] = useState(false);
   const [checkoutPin, setCheckoutPin] = useState("");
+  const [checkoutJustification, setCheckoutJustification] = useState("");
+  const [noPinMode, setNoPinMode] = useState(false);
   const [entryPinOpen, setEntryPinOpen] = useState(false);
   const [entryPinCode, setEntryPinCode] = useState("");
 
@@ -76,9 +78,12 @@ export default function EbiDetail() {
 
   async function handleCheckout() {
     try {
-      await post(`/ebi/presence/${confirmId}/checkout`, { pin_code: checkoutPin });
+      const payload = noPinMode
+        ? { checkout_justification: checkoutJustification }
+        : { pin_code: checkoutPin };
+      await post(`/ebi/presence/${confirmId}/checkout`, payload);
       toast.success("Saída registrada.");
-      setConfirmId(null); setCheckoutPin(""); load();
+      setConfirmId(null); setCheckoutPin(""); setCheckoutJustification(""); setNoPinMode(false); load();
     } catch (err) { toast.error(mensagemParaUsuario(err, "Erro na saída.")); }
   }
 
@@ -173,7 +178,7 @@ export default function EbiDetail() {
               type="button"
               className="button secondary py-2 px-3 text-sm h-auto min-h-0 w-auto inline-flex"
               disabled={Boolean(row.exit_at) || ebi.status === "ENCERRADO"}
-              onClick={() => { setConfirmId(row.id); setCheckoutPin(""); }}
+              onClick={() => { setConfirmId(row.id); setCheckoutPin(""); setCheckoutJustification(""); setNoPinMode(false); }}
             >
               Registrar saída
             </button>
@@ -218,10 +223,76 @@ export default function EbiDetail() {
         </form>
       </Modal>
 
-      <Modal open={Boolean(confirmId)} title="PIN de saída" onClose={() => { setConfirmId(null); setCheckoutPin(""); }}>
+      <Modal open={Boolean(confirmId)} title="Registrar saída" onClose={() => { setConfirmId(null); setCheckoutPin(""); setCheckoutJustification(""); setNoPinMode(false); }}>
         <div className="space-y-4">
-          <FormField label="PIN numérico (4 dígitos)" value={checkoutPin} onChange={(e) => setCheckoutPin(e.target.value.replace(/\D/g, "").slice(0, 4))} inputMode="numeric" autoComplete="one-time-code" icon={<span className="material-symbols-outlined text-[18px]">pin</span>} />
-          <button type="button" className="gradient-button mt-2" onClick={handleCheckout} disabled={checkoutPin.length !== 4}>Confirmar saída</button>
+          {!noPinMode ? (
+            <>
+              <FormField
+                label="PIN numérico (4 dígitos)"
+                value={checkoutPin}
+                onChange={(e) => setCheckoutPin(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                icon={<span className="material-symbols-outlined text-[18px]">pin</span>}
+              />
+              <button
+                type="button"
+                className="gradient-button mt-2"
+                onClick={handleCheckout}
+                disabled={checkoutPin.length !== 4}
+              >
+                Confirmar saída
+              </button>
+              <button
+                type="button"
+                onClick={() => { setNoPinMode(true); setCheckoutPin(""); }}
+                style={{ background: "none", border: "none", color: "var(--muted)", fontSize: "0.8rem", cursor: "pointer", textDecoration: "underline", display: "block", margin: "0 auto", padding: "4px 0" }}
+              >
+                Esqueceu ou perdeu o PIN?
+              </button>
+            </>
+          ) : (
+            <>
+              <div style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: "var(--radius)", padding: "12px 14px", marginBottom: "4px" }}>
+                <p style={{ margin: 0, fontSize: "0.8rem", color: "#f87171", fontWeight: 600 }}>
+                  ⚠️ Saída sem PIN — use somente em caso de perda ou esquecimento do PIN.
+                </p>
+              </div>
+              <div>
+                <label className="label">Justificativa obrigatória</label>
+                <textarea
+                  className="input"
+                  style={{ height: "auto", minHeight: "90px", paddingLeft: "16px", resize: "vertical" }}
+                  placeholder="Descreva o motivo da saída sem PIN (mínimo 10 caracteres)..."
+                  value={checkoutJustification}
+                  onChange={(e) => setCheckoutJustification(e.target.value)}
+                  maxLength={500}
+                />
+                <p style={{ margin: "4px 0 0", fontSize: "0.75rem", color: "var(--muted)", textAlign: "right" }}>
+                  {checkoutJustification.length}/500
+                </p>
+              </div>
+              <div style={{ display: "flex", gap: "10px" }}>
+                <button
+                  type="button"
+                  className="button secondary"
+                  style={{ flex: 1 }}
+                  onClick={() => { setNoPinMode(false); setCheckoutJustification(""); }}
+                >
+                  Voltar ao PIN
+                </button>
+                <button
+                  type="button"
+                  style={{ flex: 2 }}
+                  className="gradient-button"
+                  onClick={handleCheckout}
+                  disabled={checkoutJustification.trim().length < 10}
+                >
+                  Confirmar saída sem PIN
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </Modal>
 
