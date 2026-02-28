@@ -250,7 +250,7 @@ Depois disso, use o login na tela inicial. (Obs.: o Administrador e criado via s
 - Gerar relatorio do EBI
 - Gerar relatorio geral (somente coordenadora)
 - Atualizar perfil e anexar documentos obrigatorios
-
+...
 ## Modificacoes e adicoes recentes
 
 - Perfil do usuario com dados pessoais e anexos obrigatorios
