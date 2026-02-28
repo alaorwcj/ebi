@@ -153,22 +153,27 @@ export default function Ebis() {
         })}
       </div>
 
-      <div className="flex gap-2 mt-4 pb-8">
+      <nav className="pagination" aria-label="Paginação">
         <button
-          className="flex-1 py-3 rounded-xl bg-slate-100/5 border border-white/10 text-white font-medium disabled:opacity-50"
+          type="button"
+          className="pagination-btn"
           onClick={() => setPage(Math.max(1, page - 1))}
           disabled={page === 1}
+          aria-label="Página anterior"
         >
-          Anterior
+          <span className="material-symbols-outlined text-[18px]">chevron_left</span>
         </button>
+        <span className="pagination-page">{page} de {Math.max(1, Math.ceil(total / 10))}</span>
         <button
-          className="flex-1 py-3 rounded-xl bg-slate-100/5 border border-white/10 text-white font-medium disabled:opacity-50"
+          type="button"
+          className="pagination-btn"
           onClick={() => setPage(page + 1)}
           disabled={page * 10 >= total}
+          aria-label="Próxima página"
         >
-          Próxima
+          <span className="material-symbols-outlined text-[18px]">chevron_right</span>
         </button>
-      </div>
+      </nav>
 
       {(role === "COORDENADORA" || role === "ADMINISTRADOR") && (
         <Modal

@@ -6,7 +6,7 @@ import { maskPhone } from "../utils/mask.js";
 import { mensagemParaUsuario } from "../utils/apiErrors.js";
 import { validatePhone } from "../utils/validators.js";
 import { toast } from "sonner";
-import { Trash2 } from "lucide-react";
+import { Trash2, Baby, User, Phone } from "lucide-react";
 
 const initialForm = {
   name: "",
@@ -115,72 +115,77 @@ export default function Children() {
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="compact-card-grid">
         {items.map((item, index) => {
           const primary = item.guardians && item.guardians.length > 0 ? item.guardians[0] : null;
-          const accentColorClass = (index % 2 === 0) ? 'accent-purple' : 'primary';
+          const accentBg = index % 2 === 0 ? "rgba(139, 92, 246, 0.15)" : "rgba(37, 71, 244, 0.15)";
+          const accentColor = index % 2 === 0 ? "var(--accent-purple)" : "var(--primary)";
 
           return (
-            <div key={item.id} className="glass p-5 rounded-2xl space-y-4 relative overflow-hidden">
-              <div className={`absolute top-0 right-0 w-32 h-32 bg-${accentColorClass}/5 rounded-full -mr-16 -mt-16 blur-3xl`}></div>
-
-              <div className="flex justify-between items-start relative z-10">
-                <div>
-                  <p className="text-slate-500 text-[10px] font-medium uppercase tracking-tighter">Criança</p>
-                  <h3 className="text-lg font-bold text-slate-100 mt-0.5">{item.name}</h3>
+            <article key={item.id} className="compact-card">
+              <div className="compact-card-header">
+                <div className="compact-card-icon" style={{ background: accentBg, color: accentColor }}>
+                  <Baby size={20} strokeWidth={2} aria-hidden />
                 </div>
-                <div className={`w-10 h-10 rounded-xl bg-${accentColorClass}/10 flex items-center justify-center border border-${accentColorClass}/20`}>
-                  <span className={`material-symbols-outlined text-${accentColorClass}`}>child_care</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p className="compact-card-meta">Criança</p>
+                  <h3 className="compact-card-title">{item.name}</h3>
                 </div>
+                <span className="compact-card-tag" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid var(--border)", color: "var(--muted)" }}>
+                  Registro
+                </span>
               </div>
 
-              <div className="flex flex-col gap-3 relative z-10">
-                <div className="flex items-center gap-3">
-                  <span className="material-symbols-outlined text-slate-500 text-[16px]">person</span>
-                  <div>
-                    <p className="text-slate-500 text-[10px]">Responsável</p>
-                    <p className="font-semibold text-slate-200 text-sm uppercase">{primary ? primary.name : "N/A"}</p>
-                  </div>
+              <div className="compact-card-body">
+                <div className="flex items-center gap-2 text-slate-400 mb-1">
+                  <User size={12} strokeWidth={2} aria-hidden />
+                  <span className="text-[11px] uppercase tracking-wider">Responsável</span>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="material-symbols-outlined text-slate-500 text-[16px]">call</span>
-                  <div>
-                    <p className="text-slate-500 text-[10px]">Contato</p>
-                    <p className="font-semibold text-slate-200 text-sm">{primary ? primary.phone : "N/A"}</p>
-                  </div>
+                <p className="text-slate-200 font-medium text-sm truncate">{primary ? primary.name : "N/A"}</p>
+                <div className="flex items-center gap-2 text-slate-400 mt-2">
+                  <Phone size={12} strokeWidth={2} aria-hidden />
+                  <span className="text-[11px] uppercase tracking-wider">Contato</span>
                 </div>
+                <p className="text-slate-200 font-medium text-sm">{primary ? primary.phone : "N/A"}</p>
               </div>
 
-              <div className="flex gap-2 pt-2 relative z-10">
+              <div className="compact-card-divider" />
+
+              <div className="compact-card-actions">
                 <button
+                  type="button"
                   onClick={() => openEditModal(item)}
-                  className="card-action-btn flex-1 py-2.5 rounded-xl bg-slate-100/5 border border-white/10 flex items-center justify-center gap-2 text-sm font-medium hover:bg-white/10 transition-colors text-white"
+                  className="compact-card-btn-primary"
                 >
-                  <span className="material-symbols-outlined text-[16px]">edit</span>
-                  Editar Registro
+                  Editar
                 </button>
               </div>
-            </div>
+            </article>
           );
         })}
       </div>
 
-      <div className="flex gap-2 mt-4 pb-8">
+      <nav className="pagination" aria-label="Paginação">
         <button
-          className="flex-1 py-3 rounded-xl bg-slate-100/5 border border-white/10 text-white font-medium disabled:opacity-50"
+          type="button"
+          className="pagination-btn"
           onClick={() => setPage(Math.max(1, page - 1))}
           disabled={page === 1}
+          aria-label="Página anterior"
         >
-          Anterior
+          <span className="material-symbols-outlined text-[18px]">chevron_left</span>
         </button>
+        <span className="pagination-page">{page} de {Math.max(1, Math.ceil(total / 10))}</span>
         <button
-          className="flex-1 py-3 rounded-xl bg-slate-100/5 border border-white/10 text-white font-medium disabled:opacity-50"
+          type="button"
+          className="pagination-btn"
           onClick={() => setPage(page + 1)}
           disabled={page * 10 >= total}
+          aria-label="Próxima página"
         >
-          Próxima
+          <span className="material-symbols-outlined text-[18px]">chevron_right</span>
         </button>
-      </div>
+      </nav>
 
       <Modal
         open={modalOpen}

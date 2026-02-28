@@ -6,6 +6,7 @@ import { maskPhone } from "../utils/mask.js";
 import { mensagemParaUsuario } from "../utils/apiErrors.js";
 import { validateEmail, validatePassword, validatePhone } from "../utils/validators.js";
 import { toast } from "sonner";
+import { UserCircle, Mail, UsersRound } from "lucide-react";
 
 const initialForm = {
   full_name: "",
@@ -99,85 +100,82 @@ export default function Users() {
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="compact-card-grid">
         {items.map((item, index) => {
-          const accentColorClass = (index % 2 === 1) ? 'accent-purple' : 'primary';
+          const accentBg = index % 2 === 1 ? "rgba(139, 92, 246, 0.15)" : "rgba(37, 71, 244, 0.15)";
+          const accentColor = index % 2 === 1 ? "var(--accent-purple)" : "var(--primary)";
+          const roleStyles = item.role === "ADMINISTRADOR"
+            ? { background: "rgba(245, 158, 11, 0.15)", color: "#f59e0b", border: "1px solid rgba(245, 158, 11, 0.3)" }
+            : item.role === "COORDENADORA"
+              ? { background: "rgba(37, 71, 244, 0.15)", color: "var(--primary)", border: "1px solid rgba(37, 71, 244, 0.3)" }
+              : { background: "rgba(255,255,255,0.06)", color: "var(--muted)", border: "1px solid var(--border)" };
+          const roleLabel = item.role === "ADMINISTRADOR" ? "Admin" : item.role === "COORDENADORA" ? "Coord" : "Colab";
 
           return (
-            <div key={item.id} className="glass p-5 rounded-2xl space-y-4 relative overflow-hidden">
-              <div className={`absolute top-0 right-0 w-32 h-32 bg-${accentColorClass}/5 rounded-full -mr-16 -mt-16 blur-3xl`}></div>
-
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-slate-500 text-[10px] font-medium uppercase tracking-tighter">Colaboradora</p>
-                  <h3 className="text-lg font-bold text-slate-100 mt-0.5">{item.full_name}</h3>
+            <article key={item.id} className="compact-card">
+              <div className="compact-card-header">
+                <div className="compact-card-icon" style={{ background: accentBg, color: accentColor }}>
+                  <UserCircle size={20} strokeWidth={2} aria-hidden />
                 </div>
-                <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider border ${item.role === 'ADMINISTRADOR'
-                  ? 'bg-amber-500/10 text-amber-500 border-amber-500/20 shadow-[0_0_12px_rgba(245,158,11,0.2)]'
-                  : item.role === 'COORDENADORA'
-                    ? 'bg-primary/10 text-primary border-primary/20 shadow-[0_0_12px_rgba(37,71,244,0.2)]'
-                    : 'bg-slate-500/10 text-slate-400 border-slate-500/20'
-                  }`}>
-                  {item.role === 'ADMINISTRADOR' ? 'Admin' : item.role === 'COORDENADORA' ? 'Coord' : 'Colab'}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p className="compact-card-meta">Colaboradora</p>
+                  <h3 className="compact-card-title">{item.full_name}</h3>
+                </div>
+                <span className="compact-card-tag" style={roleStyles}>
+                  {roleLabel}
                 </span>
               </div>
 
-              <div className="flex flex-col gap-3 relative z-10">
-                <div className="flex items-center gap-3">
-                  <span className="material-symbols-outlined text-slate-500 text-[16px]">mail</span>
-                  <div>
-                    <p className="text-slate-500 text-[10px]">E-mail</p>
-                    <p className="font-semibold text-slate-200 text-sm">{item.email}</p>
-                  </div>
+              <div className="compact-card-body">
+                <div className="flex items-center gap-2 text-slate-400 mb-1">
+                  <Mail size={12} strokeWidth={2} aria-hidden />
+                  <span className="text-[11px] uppercase tracking-wider">E-mail</span>
                 </div>
-                {item.phone && (
-                  <div className="flex items-center gap-3">
-                    <span className="material-symbols-outlined text-slate-500 text-[16px]">call</span>
-                    <div>
-                      <p className="text-slate-500 text-[10px]">Telefone</p>
-                      <p className="font-semibold text-slate-200 text-sm">{item.phone}</p>
-                    </div>
-                  </div>
-                )}
-                <div className="flex items-center gap-3">
-                  <span className="material-symbols-outlined text-slate-500 text-[16px]">groups</span>
-                  <div>
-                    <p className="text-slate-500 text-[10px]">Grupo / Turma</p>
-                    <p className="font-semibold text-slate-200 text-sm uppercase">Grupo {item.group_number || "N/A"}</p>
-                  </div>
+                <p className="text-slate-200 font-medium text-sm truncate">{item.email}</p>
+                <div className="flex items-center gap-2 text-slate-400 mt-2">
+                  <UsersRound size={12} strokeWidth={2} aria-hidden />
+                  <span className="text-[11px] uppercase tracking-wider">Grupo</span>
                 </div>
+                <p className="text-slate-200 font-medium text-sm">Grupo {item.group_number || "N/A"}</p>
               </div>
 
-              <div className="flex gap-2 pt-2 relative z-10">
+              <div className="compact-card-divider" />
+
+              <div className="compact-card-actions">
                 <button
+                  type="button"
                   onClick={() => openEditModal(item)}
-                  className="flex-1 py-2.5 rounded-xl bg-slate-100/5 border border-white/10 flex items-center justify-center gap-2 text-sm font-medium hover:bg-white/10 transition-colors text-white"
+                  className="compact-card-btn-primary"
                 >
-                  <span className="material-symbols-outlined text-[16px]">edit</span>
-                  Editar Usuário
+                  Editar
                 </button>
               </div>
-            </div>
+            </article>
           );
         })}
       </div>
 
-      <div className="flex gap-2 mt-4 pb-8">
+      <nav className="pagination" aria-label="Paginação">
         <button
-          className="flex-1 py-3 rounded-xl bg-slate-100/5 border border-white/10 text-white font-medium disabled:opacity-50"
+          type="button"
+          className="pagination-btn"
           onClick={() => setPage(Math.max(1, page - 1))}
           disabled={page === 1}
+          aria-label="Página anterior"
         >
-          Anterior
+          <span className="material-symbols-outlined text-[18px]">chevron_left</span>
         </button>
+        <span className="pagination-page">{page} de {Math.max(1, Math.ceil(total / 10))}</span>
         <button
-          className="flex-1 py-3 rounded-xl bg-slate-100/5 border border-white/10 text-white font-medium disabled:opacity-50"
+          type="button"
+          className="pagination-btn"
           onClick={() => setPage(page + 1)}
           disabled={page * 10 >= total}
+          aria-label="Próxima página"
         >
-          Próxima
+          <span className="material-symbols-outlined text-[18px]">chevron_right</span>
         </button>
-      </div>
+      </nav>
 
       <Modal
         open={modalOpen}

@@ -320,6 +320,158 @@ a {
 }
 
 /* ============================================================
+   COMPACT CARDS — Grid layout (auto-fill: aproveita espaço disponível)
+   ============================================================ */
+.compact-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .compact-card-grid {
+    gap: 18px;
+  }
+}
+
+.compact-card {
+  background: linear-gradient(180deg, rgba(24, 24, 27, 0.9) 0%, rgba(15, 15, 18, 0.95) 100%);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+}
+
+.compact-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.04) 1px, transparent 0);
+  background-size: 12px 12px;
+  pointer-events: none;
+}
+
+.compact-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.compact-card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.compact-card-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.3;
+  flex: 1;
+  min-width: 0;
+}
+
+.compact-card-meta {
+  font-size: 0.7rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.compact-card-tag {
+  display: inline-flex;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Section label - used in forms (Profile, etc.) */
+.section-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.compact-card-body {
+  font-size: 0.8125rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.compact-card-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 2px 0;
+}
+
+.compact-card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.compact-card-actions .compact-card-btn-primary {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, var(--primary), var(--accent-purple));
+  color: white;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: opacity 0.2s, transform 0.15s;
+}
+
+.compact-card-actions .compact-card-btn-primary:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+.compact-card-actions .compact-card-btn-secondary {
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.compact-card-actions .compact-card-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* ============================================================
    INPUTS + FORM ELEMENTS
    ============================================================ */
 .input {
@@ -514,8 +666,9 @@ label,
   background: rgba(15, 15, 18, 0.95);
   border-right: 1px solid var(--border);
   height: 100vh;
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
   overflow-y: auto;
   overflow-x: hidden;
   z-index: 100;
@@ -657,7 +810,9 @@ label,
   .app-layout {
     flex-direction: row;
   }
-
+  .app-main {
+    margin-left: 240px;
+  }
   .app-content {
     padding-bottom: 32px;
   }
@@ -730,6 +885,53 @@ label,
 .sidebar-wpay {
   display: none !important;
 }
+/* ============================================================
+   PAGINATION — compact, elegant controls
+   ============================================================ */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+  padding-bottom: 32px;
+}
+
+.pagination-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  min-width: 36px;
+  height: 36px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.pagination-page {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted);
+  padding: 0 12px;
+}
+
 /* ============================================================
    DIALOG ANIMATIONS (replaces tailwindcss-animate dependency)
    ============================================================ */
