@@ -1,12 +1,13 @@
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Response, UploadFile, status
-from sqlalchemy.orm import Session
+from sqlalchemy import select
+from sqlalchemy.orm import Session, selectinload
 
 from app.core.db import get_db
 from app.core.deps import get_current_user
 from app.core.security import get_password_hash
 from app.models.user import User
 from app.models.user_document import DocumentType, UserDocument
-from app.schemas.profile import ProfileOut, ProfileUpdate
+from app.schemas.profile import DocumentOut, ProfileOut, ProfileUpdate
 
 router = APIRouter()
 
@@ -22,13 +23,59 @@ ALLOWED_MIME_TYPES = [
 ]
 
 
+def _user_to_profile_out(user: User) -> ProfileOut:
+    """Converte User ORM para ProfileOut com documents serializados corretamente."""
+    docs = [
+        DocumentOut(
+            id=d.id,
+            document_type=d.document_type,
+            filename=d.filename,
+            mime_type=d.mime_type,
+            file_size=d.file_size,
+            created_at=d.created_at.isoformat() if d.created_at else "",
+        )
+        for d in (user.documents or [])
+    ]
+    return ProfileOut(
+        id=user.id,
+        full_name=user.full_name,
+        email=user.email,
+        phone=user.phone,
+        role=user.role,
+        group_number=user.group_number,
+        cpf=user.cpf,
+        rg=user.rg,
+        birth_date=user.birth_date,
+        address=user.address,
+        city=user.city,
+        state=user.state,
+        zip_code=user.zip_code,
+        emergency_contact_name=user.emergency_contact_name,
+        emergency_contact_phone=user.emergency_contact_phone,
+        documents=docs,
+    )
+
+
 @router.get("/me", response_model=ProfileOut)
 def get_my_profile(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     """Retorna perfil do usuário autenticado com documentos."""
-    return current_user
+    try:
+        stmt = select(User).where(User.id == current_user.id).options(
+            selectinload(User.documents)
+        )
+        user = db.execute(stmt).scalar_one_or_none()
+        if not user:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        return _user_to_profile_out(user)
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        print(traceback.format_exc())
+        raise
 
 
 @router.put("/me", response_model=ProfileOut)
@@ -67,8 +114,12 @@ def update_my_profile(
         current_user.emergency_contact_phone = payload.emergency_contact_phone
 
     db.commit()
-    db.refresh(current_user)
-    return current_user
+
+    stmt = select(User).where(User.id == current_user.id).options(
+        selectinload(User.documents)
+    )
+    user = db.execute(stmt).scalar_one()
+    return _user_to_profile_out(user)
 
 
 @router.post("/me/documents", status_code=status.HTTP_201_CREATED)

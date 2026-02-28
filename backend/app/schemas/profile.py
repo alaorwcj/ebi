@@ -1,6 +1,6 @@
-from datetime import date
+from datetime import date, datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from app.models.user_document import DocumentType
 
@@ -30,6 +30,13 @@ class DocumentOut(BaseModel):
     mime_type: str
     file_size: int
     created_at: str
+
+    @field_validator("created_at", mode="before")
+    @classmethod
+    def parse_created_at(cls, v):
+        if isinstance(v, datetime):
+            return v.isoformat()
+        return v
 
     class Config:
         from_attributes = True

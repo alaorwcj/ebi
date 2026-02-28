@@ -1,3 +1,5 @@
+import traceback
+
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
@@ -21,13 +23,14 @@ def add_error_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(Exception)
     async def generic_exception_handler(request: Request, exc: Exception):
+        traceback.print_exc()
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={
                 "type": "https://example.com/internal-error",
                 "title": "Internal server error",
                 "status": status.HTTP_500_INTERNAL_SERVER_ERROR,
-                "detail": "Unexpected error",
+                "detail": str(exc),
                 "instance": str(request.url),
             },
         )

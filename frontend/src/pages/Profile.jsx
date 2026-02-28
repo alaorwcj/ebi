@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { get, put } from "../api/client.js";
 import DatePicker from "../components/DatePicker.jsx";
 import FormField from "../components/FormField.jsx";
+import Modal from "../components/Modal.jsx";
 import { maskCPF, maskPhone, maskZipCode } from "../utils/mask.js";
 import { mensagemParaUsuario } from "../utils/apiErrors.js";
 import { validatePhone } from "../utils/validators.js";
@@ -25,6 +26,8 @@ export default function Profile() {
     full_name: "", phone: "", cpf: "", rg: "", birth_date: "", address: "", city: "", state: "SP", zip_code: "", emergency_contact_name: "", emergency_contact_phone: "", password: ""
   });
   const [uploading, setUploading] = useState(false);
+  const [confirmRemove, setConfirmRemove] = useState({ open: false, doc: null });
+  const [confirmDownload, setConfirmDownload] = useState({ open: false, doc: null });
 
   async function loadProfile() {
     try {
@@ -78,7 +81,7 @@ export default function Profile() {
   }
 
   async function handleDelete(documentId) {
-    if (!confirm("Tem certeza que deseja remover este documento?")) return;
+    setConfirmRemove({ open: false, doc: null });
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/profile/me/documents/${documentId}`, { method: "DELETE", headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
       if (!response.ok) throw new Error("Erro ao remover");
@@ -182,29 +185,31 @@ export default function Profile() {
       </div>
 
       {/* Sidebar: Documentos */}
-      <div className="glass rounded-2xl p-6 lg:w-80 lg:shrink-0 lg:sticky lg:top-24">
-        {/* Indicador de progresso */}
-        <div className="flex items-center gap-4 mb-6 pb-6 border-b border-white/10">
-          <div className="relative w-14 h-14 shrink-0">
-            <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
-              <circle cx="18" cy="18" r="16" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="3" />
-              <circle cx="18" cy="18" r="16" fill="none" stroke="var(--status-open-text)" strokeWidth="3" strokeDasharray={`${documentsPercent} ${100 - documentsPercent}`} strokeLinecap="round" className="transition-all duration-500" />
-            </svg>
-            <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white">{documentsPercent}%</span>
+      <div className="glass rounded-2xl lg:w-80 lg:shrink-0 lg:sticky lg:top-24 flex flex-col lg:max-h-[calc(200vh-7rem)]">
+        {/* Cabeçalho fixo - Indicador de progresso */}
+        <div className="shrink-0 p-6 pb-0">
+          <div className="flex items-center gap-4 mb-6 pb-6 border-b border-white/10">
+            <div className="relative w-14 h-14 shrink-0">
+              <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
+                <circle cx="18" cy="18" r="16" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="3" />
+                <circle cx="18" cy="18" r="16" fill="none" stroke="var(--status-open-text)" strokeWidth="3" strokeDasharray={`${documentsPercent} ${100 - documentsPercent}`} strokeLinecap="round" className="transition-all duration-500" />
+              </svg>
+              <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white">{documentsPercent}%</span>
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                <span className="material-symbols-outlined text-accent-purple">folder_open</span> Documentos
+              </h2>
+              <p className="text-xs text-slate-400 mt-0.5">{documentsCount} de {documentsTotal} enviados</p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-lg font-bold text-white flex items-center gap-2">
-              <span className="material-symbols-outlined text-accent-purple">folder_open</span> Documentos
-            </h2>
-            <p className="text-xs text-slate-400 mt-0.5">{documentsCount} de {documentsTotal} enviados</p>
-          </div>
+          <p className="text-sm text-slate-400 mb-5">
+            É obrigatório o envio dos documentos abaixo para atuação na EBI Vila Paula.
+          </p>
         </div>
 
-        <p className="text-sm text-slate-400 mb-5">
-          É obrigatório o envio dos documentos abaixo para atuação na EBI Vila Paula.
-        </p>
-
-        <div className="space-y-3">
+        {/* Lista de documentos - scrollável */}
+        <div className="flex-1 overflow-y-auto space-y-3 px-6 pb-6 custom-scrollbar">
           {Object.entries(documentTypeLabels).map(([type, label]) => {
             const doc = profile?.documents?.find(d => d.document_type === type);
             return (
@@ -219,14 +224,22 @@ export default function Profile() {
                 </div>
 
                 {doc ? (
-                  <div className="flex flex-col gap-2 mt-3 pt-3 border-t border-white/5">
+                  <div className="flex flex-col gap-3 mt-3 pt-3 border-t border-white/5">
                     <span className="text-xs text-slate-400 truncate w-full" title={doc.filename}>{doc.filename} ({(doc.file_size / 1024).toFixed(0)} KB)</span>
                     <div className="flex gap-2">
-                      <button type="button" className="button secondary flex-1 py-1.5 px-3 h-auto min-h-0 text-xs flex items-center justify-center gap-1" onClick={() => handleDownload(doc.id, doc.filename)}>
-                        <span className="material-symbols-outlined text-[14px]">download</span> Baixar
+                      <button
+                        type="button"
+                        className="flex-1 py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 bg-slate-100/5 border border-white/10 text-white hover:bg-slate-100/10 transition-colors"
+                        onClick={() => setConfirmDownload({ open: true, doc })}
+                      >
+                        <span className="material-symbols-outlined text-[16px]">download</span> Baixar
                       </button>
-                      <button type="button" className="button bg-red-500/10 text-red-500 border border-red-500/20 flex-1 py-1.5 px-3 h-auto min-h-0 text-xs shadow-none hover:bg-red-500/20 flex items-center justify-center gap-1" onClick={() => handleDelete(doc.id)}>
-                        <span className="material-symbols-outlined text-[14px]">delete</span> Remover
+                      <button
+                        type="button"
+                        className="flex-1 py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition-colors"
+                        onClick={() => setConfirmRemove({ open: true, doc })}
+                      >
+                        <span className="material-symbols-outlined text-[16px]">delete</span> Remover
                       </button>
                     </div>
                   </div>
@@ -245,6 +258,65 @@ export default function Profile() {
           })}
         </div>
       </div>
+
+      {/* Modal confirmar Remover */}
+      <Modal
+        open={confirmRemove.open}
+        title="Remover documento"
+        onClose={() => setConfirmRemove({ open: false, doc: null })}
+      >
+        <p className="text-slate-300 text-sm">
+          Tem certeza que deseja remover o documento <strong className="text-white">{confirmRemove.doc?.filename}</strong>? Esta ação não pode ser desfeita.
+        </p>
+        <div className="flex gap-3 mt-4">
+          <button
+            type="button"
+            className="flex-1 py-2.5 rounded-xl font-semibold text-sm border border-white/20 bg-white/5 hover:bg-white/10 text-white transition-colors"
+            onClick={() => setConfirmRemove({ open: false, doc: null })}
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            className="flex-1 py-2.5 rounded-xl font-semibold text-sm bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 transition-colors flex items-center justify-center gap-2"
+            onClick={() => confirmRemove.doc && handleDelete(confirmRemove.doc.id)}
+          >
+            <span className="material-symbols-outlined text-[18px]">delete</span> Remover
+          </button>
+        </div>
+      </Modal>
+
+      {/* Modal confirmar Download */}
+      <Modal
+        open={confirmDownload.open}
+        title="Baixar documento"
+        onClose={() => setConfirmDownload({ open: false, doc: null })}
+      >
+        <p className="text-slate-300 text-sm">
+          Deseja baixar o arquivo <strong className="text-white">{confirmDownload.doc?.filename}</strong>?
+        </p>
+        <div className="flex gap-3 mt-4">
+          <button
+            type="button"
+            className="flex-1 py-2.5 rounded-xl font-semibold text-sm border border-white/20 bg-white/5 hover:bg-white/10 text-white transition-colors"
+            onClick={() => setConfirmDownload({ open: false, doc: null })}
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            className="flex-1 py-2.5 rounded-xl font-semibold text-sm gradient-button flex items-center justify-center gap-2"
+            onClick={() => {
+              if (confirmDownload.doc) {
+                handleDownload(confirmDownload.doc.id, confirmDownload.doc.filename);
+                setConfirmDownload({ open: false, doc: null });
+              }
+            }}
+          >
+            <span className="material-symbols-outlined text-[18px]">download</span> Baixar
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 }
