@@ -216,16 +216,33 @@ export default function Ebis() {
             </FormField>
 
             <FormField label="Colaboradoras presentes">
-              <select
-                className="input"
-                multiple
-                value={form.collaborator_ids}
-                onChange={(e) => setForm({ ...form, collaborator_ids: Array.from(e.target.selectedOptions, o => o.value) })}
-              >
-                {users.filter(u => u.role === "COLABORADORA").map((u) => (
-                  <option key={u.id} value={u.id}>{u.full_name}</option>
-                ))}
-              </select>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1">
+                {users.filter(u => u.role === "COLABORADORA").map((u) => {
+                  const isSelected = form.collaborator_ids.includes(String(u.id));
+                  return (
+                    <button
+                      key={u.id}
+                      type="button"
+                      onClick={() => {
+                        const newIds = isSelected
+                          ? form.collaborator_ids.filter(id => id !== String(u.id))
+                          : [...form.collaborator_ids, String(u.id)];
+                        setForm({ ...form, collaborator_ids: newIds });
+                      }}
+                      className={`flex items-center gap-3 p-3 rounded-xl border transition-all text-left ${isSelected
+                          ? 'bg-primary/10 border-primary text-white ring-1 ring-primary'
+                          : 'bg-slate-900/40 border-slate-800 text-slate-400 hover:border-slate-700 hover:bg-slate-900/60'
+                        }`}
+                    >
+                      <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors ${isSelected ? 'bg-primary border-primary' : 'border-slate-700'
+                        }`}>
+                        {isSelected && <span className="material-symbols-outlined text-[14px] text-white font-bold">check</span>}
+                      </div>
+                      <span className="text-sm font-medium leading-none">{u.full_name}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </FormField>
 
             <div className="flex gap-3 mt-4">

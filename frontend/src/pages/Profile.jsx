@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { get, put } from "../api/client.js";
+import { API_URL } from "../api/config.js";
 import DatePicker from "../components/DatePicker.jsx";
 import FormField from "../components/FormField.jsx";
 import Modal from "../components/Modal.jsx";
@@ -62,7 +63,7 @@ export default function Profile() {
     setUploading(true);
     try {
       const formData = new FormData(); formData.append("document_type", documentType); formData.append("file", file);
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/profile/me/documents`, { method: "POST", headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }, body: formData });
+      const response = await fetch(`${API_URL}/profile/me/documents`, { method: "POST", headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }, body: formData });
       if (!response.ok) throw new Error((await response.json()).detail || "Erro ao enviar");
       toast.success("Enviado com sucesso.");
       loadProfile();
@@ -72,7 +73,7 @@ export default function Profile() {
 
   async function handleDownload(documentId, filename) {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/profile/me/documents/${documentId}`, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
+      const response = await fetch(`${API_URL}/profile/me/documents/${documentId}`, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
       if (!response.ok) throw new Error("Erro ao baixar");
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
@@ -83,7 +84,7 @@ export default function Profile() {
   async function handleDelete(documentId) {
     setConfirmRemove({ open: false, doc: null });
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/profile/me/documents/${documentId}`, { method: "DELETE", headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
+      const response = await fetch(`${API_URL}/profile/me/documents/${documentId}`, { method: "DELETE", headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
       if (!response.ok) throw new Error("Erro ao remover");
       toast.success("Removido com sucesso.");
       loadProfile();

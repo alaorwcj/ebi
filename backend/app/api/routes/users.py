@@ -18,7 +18,7 @@ def list_users_api(
     page: int = Query(1, ge=1),
     page_size: int = Query(10, ge=1, le=100),
     db: Session = Depends(get_db),
-    _=Depends(require_role(UserRole.ADMINISTRADOR)),
+    _=Depends(require_role(UserRole.ADMINISTRADOR, UserRole.COORDENADORA)),
 ):
     items, total = list_users(db, search, page, page_size)
     return UserList(items=items, total=total, page=page, page_size=page_size)

@@ -21,13 +21,24 @@ class Settings(BaseSettings):
     def cors_origins(self) -> list[str]:
         import os
         import json
-        v = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:4173")
+        public_ip_origin = "http://69.169.103.28:5173"
+        default_origins = f"http://localhost:5173,http://localhost:4173,{public_ip_origin}"
+        v = os.getenv("CORS_ORIGINS", default_origins)
+        
+        origins = []
         if v.startswith("["):
             try:
-                return json.loads(v)
+                origins = json.loads(v)
             except:
-                pass
-        return [i.strip() for i in v.split(",") if i.strip()]
+                origins = [v]
+        else:
+            origins = [i.strip() for i in v.split(",") if i.strip()]
+            
+        # Ensure public IP is always there in dev/remote env
+        if public_ip_origin not in origins:
+            origins.append(public_ip_origin)
+            
+        return origins
 
     allow_bootstrap: bool = True
 
