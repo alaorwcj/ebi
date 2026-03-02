@@ -134,7 +134,7 @@ export default function EbiDetail() {
               <span className="material-symbols-outlined">how_to_reg</span>
               Registrar presença
             </button>
-            {role === "COORDENADORA" && (
+            {["COORDENADORA", "ADMINISTRADOR"].includes(role) && (
               <>
                 <button
                   type="button"
@@ -186,7 +186,7 @@ export default function EbiDetail() {
         />
       </div>
 
-      {role === "COORDENADORA" && (
+      {["COORDENADORA", "ADMINISTRADOR"].includes(role) && (
         <div className="mt-6">
           <Link className="button secondary w-auto inline-flex" to={`/reports/ebi/${id}`}>
             <span className="material-symbols-outlined">bar_chart</span>

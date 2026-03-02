@@ -3,13 +3,11 @@ import { useParams } from "react-router-dom";
 import { get } from "../api/client.js";
 import { formatDate, formatDateTime } from "../utils/format.js";
 import { mensagemParaUsuario } from "../utils/apiErrors.js";
-import { useMediaQuery, MOBILE_BREAKPOINT } from "../hooks/useMediaQuery.js";
 import { toast } from "sonner";
 
 export default function EbiReport() {
   const { id } = useParams();
   const [report, setReport] = useState(null);
-  const isMobile = useMediaQuery(MOBILE_BREAKPOINT);
 
   useEffect(() => {
     get(`/reports/ebi/${id}`)
@@ -31,96 +29,135 @@ export default function EbiReport() {
   const presences = report.presences || [];
   const hasPresences = presences.length > 0;
 
+  const currentDate = new Date().toLocaleDateString('pt-BR', {
+    day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  });
+
   return (
-    <div className="space-y-6 print:space-y-0 print:bg-white print:text-black">
+    <div className="space-y-6 print:m-0 print:p-0 print:bg-white print:text-black">
+
+      {/* Header Interativo (Oculto na impressão) */}
       <div className="flex items-center justify-between mb-4 print:hidden px-2">
         <div>
           <h2 className="text-2xl font-bold text-white">Relatório do EBI</h2>
-          <p className="text-slate-400 text-sm">Dashboard Informativo</p>
+          <p className="text-slate-400 text-sm">Visão Detalhada</p>
         </div>
-        <button type="button" className="gradient-button h-11 px-5" onClick={handlePrint}>
-          <span className="material-symbols-outlined">print</span>
-          Imprimir
+        <button type="button" className="gradient-button h-11 px-6 font-semibold" onClick={handlePrint}>
+          <span className="material-symbols-outlined mr-2">print</span>
+          Imprimir Relatório
         </button>
       </div>
 
-      <div className="glass p-6 space-y-8 print:p-0 print:border-0 print:shadow-none print:bg-transparent">
-        <section className="space-y-4">
-          <h3 className="text-lg font-bold text-slate-400 uppercase tracking-widest text-[10px] flex items-center gap-2">
-            <span className="material-symbols-outlined text-primary text-[14px]">info</span> Dados do EBI
+      {/* Container Principal do Relatório */}
+      <div className="glass p-8 rounded-2xl print:p-0 print:border-0 print:shadow-none print:rounded-none print:bg-transparent">
+
+        {/* Cabeçalho do Documento Impresso */}
+        <div className="border-b border-white/10 pb-6 mb-8 print:border-black/20">
+          <h1 className="text-3xl font-bold text-white print:text-black mb-2 tracking-tight">Relatório Executivo de EBI</h1>
+          <div className="flex justify-between items-end text-sm text-slate-400 print:text-gray-600">
+            <p>Igreja Cristã Maranata - Vila Paula</p>
+            <p>Gerado em: <span className="font-mono">{currentDate}</span></p>
+          </div>
+        </div>
+
+        {/* Seção 1: KPIs e Informações Gerais */}
+        <section className="mb-10">
+          <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 print:text-gray-500 flex items-center gap-2">
+            <span className="material-symbols-outlined text-primary print:text-gray-500 text-[18px]">info</span>
+            Dados Gerais
           </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 bg-black/20 rounded-2xl p-6 border border-white/5">
-            <div>
-              <p className="text-slate-500 text-[10px] uppercase font-bold tracking-tighter">Data</p>
-              <p className="text-lg font-bold text-white">{formatDate(report.ebi_date)}</p>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-slate-900/50 p-5 rounded-xl border border-white/5 print:border-gray-300 print:bg-gray-50">
+              <p className="text-[10px] uppercase font-bold text-slate-500 print:text-gray-500 tracking-wider mb-1">Data do EBI</p>
+              <p className="text-xl font-bold text-white print:text-black">{formatDate(report.ebi_date)}</p>
             </div>
-            <div>
-              <p className="text-slate-500 text-[10px] uppercase font-bold tracking-tighter">Grupo</p>
-              <p className="text-lg font-bold text-white">{report.group_number}</p>
+            <div className="bg-slate-900/50 p-5 rounded-xl border border-white/5 print:border-gray-300 print:bg-gray-50">
+              <p className="text-[10px] uppercase font-bold text-slate-500 print:text-gray-500 tracking-wider mb-1">Grupo Responsável</p>
+              <p className="text-xl font-bold text-white print:text-black">Grupo {report.group_number}</p>
             </div>
-            <div>
-              <p className="text-slate-500 text-[10px] uppercase font-bold tracking-tighter">Coordenadora</p>
-              <p className="text-lg font-bold text-white text-primary">{report.coordinator_name}</p>
+            <div className="bg-slate-900/50 p-5 rounded-xl border border-white/5 print:border-gray-300 print:bg-gray-50">
+              <p className="text-[10px] uppercase font-bold text-slate-500 print:text-gray-500 tracking-wider mb-1">Coordenadora</p>
+              <p className="text-xl font-bold text-primary print:text-black truncate">{report.coordinator_name}</p>
+            </div>
+            <div className="bg-slate-900/50 p-5 rounded-xl border border-white/5 print:border-gray-300 print:bg-gray-50">
+              <p className="text-[10px] uppercase font-bold text-slate-500 print:text-gray-500 tracking-wider mb-1">Total de Crianças</p>
+              <p className="text-xl font-bold text-white print:text-black">{presences.length}</p>
             </div>
           </div>
         </section>
 
-        <section className="space-y-4">
-          <h3 className="text-lg font-bold text-slate-400 uppercase tracking-widest text-[10px] flex items-center gap-2">
-            <span className="material-symbols-outlined text-accent-purple text-[14px]">groups</span> Equipe Presente
+        {/* Seção 2: Equipe */}
+        <section className="mb-10">
+          <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 print:text-gray-500 flex items-center gap-2">
+            <span className="material-symbols-outlined text-accent-cyan print:text-gray-500 text-[18px]">engineering</span>
+            Equipe Presente
           </h3>
-          <div className="flex flex-wrap gap-2">
-            {report.collaborators && report.collaborators.length > 0
-              ? report.collaborators.map((name, i) => (
-                <span key={i} className="px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-bold border border-primary/20">
-                  {name}
-                </span>
-              ))
-              : <p className="text-slate-500 italic text-sm">Nenhuma colaboradora registrada.</p>}
-          </div>
-        </section>
-
-        <section className="space-y-4">
-          <h3 className="text-lg font-bold text-slate-400 uppercase tracking-widest text-[10px] flex items-center gap-2">
-            <span className="material-symbols-outlined text-green-400 text-[14px]">list_alt</span> Lista de Crianças ({presences.length})
-          </h3>
-
-          <div className="space-y-4">
-            {hasPresences ? (
-              presences.map((item, index) => (
-                <div key={index} className="bg-slate-900/40 border border-white/5 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center font-bold text-slate-300">
-                      {index + 1}
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-white">{item.child_name}</p>
-                      <p className="text-xs text-slate-400 flex items-center gap-1">
-                        <span className="material-symbols-outlined text-[12px]">person</span> {item.guardian_name_day}
-                        <span className="mx-1">•</span>
-                        <span className="material-symbols-outlined text-[12px]">call</span> {item.guardian_phone_day}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-6 text-right md:text-left self-end md:self-auto">
-                    <div className="text-center">
-                      <p className="text-[9px] uppercase font-bold text-slate-500 tracking-tighter">Entrada</p>
-                      <p className="text-xs font-mono text-green-400">{formatDateTime(item.entry_at).split(" ").pop()}</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-[9px] uppercase font-bold text-slate-500 tracking-tighter">Saída</p>
-                      <p className="text-xs font-mono text-primary">{item.exit_at ? formatDateTime(item.exit_at).split(" ").pop() : "--:--"}</p>
-                    </div>
-                  </div>
-                </div>
-              ))
+          <div className="bg-slate-900/30 p-5 rounded-xl border border-white/5 print:border-gray-300 print:bg-transparent">
+            {report.collaborators && report.collaborators.length > 0 ? (
+              <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-y-2 gap-x-6 list-inside list-disc text-slate-300 print:text-black text-sm">
+                {report.collaborators.map((name, i) => (
+                  <li key={i} className="py-1 border-b border-white/5 print:border-gray-200 last:border-0">{name}</li>
+                ))}
+              </ul>
             ) : (
-              <div className="bg-black/20 rounded-2xl p-8 text-center border border-white/5 border-dashed">
-                <p className="text-slate-500 text-sm">Nenhuma presença registrada neste EBI.</p>
-              </div>
+              <p className="text-slate-500 italic text-sm">Nenhuma colaboradora registrada.</p>
             )}
           </div>
         </section>
+
+        {/* Seção 3: Tabela de Crianças */}
+        <section>
+          <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 print:text-gray-500 flex items-center gap-2">
+            <span className="material-symbols-outlined text-green-400 print:text-gray-500 text-[18px]">family_restroom</span>
+            Controle de Presença (Crianças)
+          </h3>
+
+          {hasPresences ? (
+            <div className="overflow-x-auto rounded-xl border border-white/10 print:border-gray-300">
+              <table className="w-full text-left border-collapse text-sm">
+                <thead>
+                  <tr className="bg-slate-900/80 border-b border-white/10 print:bg-gray-100 print:border-gray-300 text-slate-300 print:text-black uppercase text-[10px] tracking-wider">
+                    <th className="p-4 font-bold w-12 text-center">#</th>
+                    <th className="p-4 font-bold">Nome da Criança</th>
+                    <th className="p-4 font-bold">Responsável</th>
+                    <th className="p-4 font-bold">Telefone</th>
+                    <th className="p-4 font-bold text-center">Entrada</th>
+                    <th className="p-4 font-bold text-center">Saída</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5 print:divide-gray-200 bg-slate-900/20 print:bg-white text-slate-200 print:text-black">
+                  {presences.map((item, index) => (
+                    <tr key={index} className="hover:bg-white/5 print:hover:bg-transparent transition-colors">
+                      <td className="p-4 text-center text-slate-500 font-mono text-xs">{index + 1}</td>
+                      <td className="p-4 font-semibold">{item.child_name}</td>
+                      <td className="p-4 text-slate-400 print:text-gray-700">{item.guardian_name_day}</td>
+                      <td className="p-4 font-mono text-xs text-slate-400 print:text-gray-700">{item.guardian_phone_day}</td>
+                      <td className="p-4 text-center font-mono text-xs text-green-400 print:text-black">
+                        {formatDateTime(item.entry_at).split(" ").pop()}
+                      </td>
+                      <td className="p-4 text-center font-mono text-xs text-primary print:text-black">
+                        {item.exit_at ? formatDateTime(item.exit_at).split(" ").pop() : "--:--"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="bg-black/20 rounded-xl p-8 text-center border border-white/5 border-dashed print:border-gray-300">
+              <p className="text-slate-500 print:text-gray-600 text-sm">Nenhuma presença registrada neste EBI.</p>
+            </div>
+          )}
+        </section>
+
+        {/* Rodapé de Impressão */}
+        <div className="hidden print:block mt-16 pt-8 border-t border-gray-300 text-center text-gray-400 text-xs">
+          <p>EBI Vila Paula - Sistema de Gestão Interna</p>
+          <p>Página 1 de 1</p>
+        </div>
+
       </div>
     </div>
   );

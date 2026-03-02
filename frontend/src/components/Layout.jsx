@@ -14,20 +14,26 @@ export default function Layout() {
   }, []);
 
   return (
-    <div className="app-layout">
+    <div className="app-layout print:block print:bg-white">
       {/* Sidebar — desktop */}
-      <Sidebar />
+      <div className="print:hidden">
+        <Sidebar />
+      </div>
 
       {/* Main content */}
-      <div className="app-main">
-        <Header />
-        <main className="app-content">
+      <div className="app-main print:ml-0 print:w-full print:block">
+        <div className="print:hidden">
+          <Header />
+        </div>
+        <main className="app-content print:p-0 print:m-0">
           <Outlet />
         </main>
       </div>
 
       {/* Bottom nav — mobile */}
-      <BottomNav />
+      <div className="print:hidden">
+        <BottomNav />
+      </div>
     </div>
   );
 }
