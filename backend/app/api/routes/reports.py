@@ -13,7 +13,7 @@ router = APIRouter()
 @router.get("/general", response_model=ReportGeneral)
 def general_report_api(
     db: Session = Depends(get_db),
-    _=Depends(require_role(UserRole.COORDENADORA)),
+    _=Depends(require_role(UserRole.ADMINISTRADOR, UserRole.COORDENADORA)),
 ):
     return get_general_report(db)
 
@@ -22,6 +22,6 @@ def general_report_api(
 def ebi_report_api(
     ebi_id: int,
     db: Session = Depends(get_db),
-    _=Depends(require_role(UserRole.COORDENADORA)),
+    _=Depends(require_role(UserRole.ADMINISTRADOR, UserRole.COORDENADORA)),
 ):
     return get_ebi_report(db, ebi_id)
