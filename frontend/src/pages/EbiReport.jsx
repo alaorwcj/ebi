@@ -54,9 +54,8 @@ export default function EbiReport() {
 
         {/* Cabeçalho do Documento Impresso */}
         <div className="border-b border-white/10 pb-6 mb-8 print:border-black/20">
-          <h1 className="text-3xl font-bold text-white print:text-black mb-2 tracking-tight">Relatório Executivo de EBI</h1>
-          <div className="flex justify-between items-end text-sm text-slate-400 print:text-gray-600">
-            <p>Igreja Cristã Maranata - Vila Paula</p>
+          <h1 className="text-3xl font-bold text-white print:text-black mb-2 tracking-tight">Relatório EBI - Vila Paula</h1>
+          <div className="flex justify-end items-end text-sm text-slate-400 print:text-gray-600">
             <p>Gerado em: <span className="font-mono">{currentDate}</span></p>
           </div>
         </div>
@@ -68,10 +67,14 @@ export default function EbiReport() {
             Dados Gerais
           </h3>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <div className="bg-slate-900/50 p-5 rounded-xl border border-white/5 print:border-gray-300 print:bg-gray-50">
               <p className="text-[10px] uppercase font-bold text-slate-500 print:text-gray-500 tracking-wider mb-1">Data do EBI</p>
               <p className="text-xl font-bold text-white print:text-black">{formatDate(report.ebi_date)}</p>
+            </div>
+            <div className="bg-slate-900/50 p-5 rounded-xl border border-white/5 print:border-gray-300 print:bg-gray-50">
+              <p className="text-[10px] uppercase font-bold text-slate-500 print:text-gray-500 tracking-wider mb-1">Tema</p>
+              <p className="text-xl font-bold text-white print:text-black truncate">{report.tema || "-"}</p>
             </div>
             <div className="bg-slate-900/50 p-5 rounded-xl border border-white/5 print:border-gray-300 print:bg-gray-50">
               <p className="text-[10px] uppercase font-bold text-slate-500 print:text-gray-500 tracking-wider mb-1">Grupo Responsável</p>

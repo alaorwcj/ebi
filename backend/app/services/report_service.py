@@ -142,6 +142,7 @@ def get_ebi_report(db: Session, ebi_id: int) -> dict:
     return {
         "ebi_id": ebi.id,
         "ebi_date": str(ebi.ebi_date),
+        "tema": ebi.tema,
         "group_number": ebi.group_number,
         "coordinator_name": coordinator.full_name if coordinator else "",
         "collaborators": collaborators,

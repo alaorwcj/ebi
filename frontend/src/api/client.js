@@ -23,6 +23,14 @@ async function request(path, options = {}) {
   }
 
   if (!response.ok) {
+    if (response.status === 401) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("role");
+      localStorage.removeItem("userId");
+      window.location.href = "/login";
+      return;
+    }
+
     let payload = null;
     try {
       const text = await response.text();

@@ -15,6 +15,7 @@ class ReportGeneral(BaseModel):
 class EbiReport(BaseModel):
     ebi_id: int
     ebi_date: str
+    tema: str | None
     group_number: int
     coordinator_name: str
     collaborators: list[str]

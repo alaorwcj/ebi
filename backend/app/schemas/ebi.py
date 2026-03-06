@@ -8,6 +8,7 @@ from app.schemas.presence import PresenceOut
 
 class EbiBase(BaseModel):
     ebi_date: date
+    tema: str | None = None
     group_number: int = Field(ge=1, le=4)
     coordinator_id: int
     collaborator_ids: list[int] = []
@@ -19,6 +20,7 @@ class EbiCreate(EbiBase):
 
 class EbiUpdate(BaseModel):
     ebi_date: date | None = None
+    tema: str | None = None
     group_number: int | None = Field(default=None, ge=1, le=4)
     coordinator_id: int | None = None
     collaborator_ids: list[int] | None = None
@@ -27,6 +29,7 @@ class EbiUpdate(BaseModel):
 class EbiOut(BaseModel):
     id: int
     ebi_date: date
+    tema: str | None
     group_number: int
     coordinator_id: int
     status: EbiStatus

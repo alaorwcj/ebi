@@ -17,6 +17,7 @@ class Ebi(Base, TimestampMixin):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     ebi_date: Mapped[date] = mapped_column(Date, nullable=False)
+    tema: Mapped[str | None] = mapped_column(String(255), nullable=True)
     group_number: Mapped[int] = mapped_column(Integer, nullable=False)
     coordinator_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     status: Mapped[EbiStatus] = mapped_column(Enum(EbiStatus, name="ebi_status"), nullable=False)

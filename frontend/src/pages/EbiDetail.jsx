@@ -114,6 +114,7 @@ export default function EbiDetail() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h3 className="text-2xl font-bold tracking-tight text-white mb-1">EBI {formatDate(ebi.ebi_date)}</h3>
+            {ebi.tema && <p className="text-sm font-medium text-slate-300 mb-2 uppercase tracking-wider">{ebi.tema}</p>}
             <div className="flex items-center gap-3">
               <span className="text-slate-400 font-medium">Grupo {ebi.group_number}</span>
               <span className={`px-2.5 py-1 text-[10px] font-bold rounded-full border uppercase tracking-wider ${ebi.status === 'FECHADO' || ebi.status === 'ENCERRADO'

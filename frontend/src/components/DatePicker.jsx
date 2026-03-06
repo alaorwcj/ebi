@@ -107,7 +107,7 @@ export default function DatePicker({ label, value, onChange, id, className, erro
           <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-primary transition-colors pointer-events-none z-20">
             <span className="material-symbols-outlined text-[18px]">calendar_today</span>
           </div>
-          <Popover.Trigger asChild>
+          <Popover.Anchor asChild>
             <input
               id={fieldId}
               type="text"
@@ -124,11 +124,11 @@ export default function DatePicker({ label, value, onChange, id, className, erro
                 error && "border-red-500/10 focus:ring-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.1)]"
               )}
             />
-          </Popover.Trigger>
+          </Popover.Anchor>
         </div>
         <Popover.Portal>
           <Popover.Content
-            className="p-0 w-auto z-[100] glass !bg-[#09090b]/95 !border-white/10 !shadow-2xl"
+            className="p-0 w-auto z-[9999] glass !bg-[#09090b]/95 !border-white/10 !shadow-2xl pointer-events-auto"
             align="start"
             sideOffset={8}
             onOpenAutoFocus={(e) => e.preventDefault()}

@@ -11,6 +11,7 @@ import { toast } from "sonner";
 
 const initialForm = {
   ebi_date: "",
+  tema: "",
   group_number: 1,
   coordinator_id: "",
   collaborator_ids: []
@@ -118,6 +119,7 @@ export default function Ebis() {
                 <div>
                   <p className="text-slate-500 text-xs font-medium uppercase tracking-tighter">Data do Registro</p>
                   <h3 className="text-lg font-bold text-slate-100 mt-0.5">{formatDate(item.ebi_date)}</h3>
+                  {item.tema && <p className="text-sm font-medium text-slate-300 mt-1 uppercase tracking-wider">{item.tema}</p>}
                 </div>
                 {isClosed ? (
                   <span className="px-3 py-1 bg-red-500/10 text-red-500 text-[10px] font-bold rounded-full border border-red-500/20 status-glow-closed uppercase tracking-wider">Fechado</span>
@@ -188,6 +190,15 @@ export default function Ebis() {
               value={form.ebi_date}
               onChange={(e) => setForm({ ...form, ebi_date: e.target.value })}
             />
+            <FormField label="Tema do Dia (opcional)">
+              <input
+                type="text"
+                className="input placeholder:text-slate-600"
+                placeholder="Ex: A Criação"
+                value={form.tema}
+                onChange={(e) => setForm({ ...form, tema: e.target.value })}
+              />
+            </FormField>
             <FormField label="Grupo">
               <select
                 className="input"
@@ -230,8 +241,8 @@ export default function Ebis() {
                         setForm({ ...form, collaborator_ids: newIds });
                       }}
                       className={`flex items-center gap-3 p-3 rounded-xl border transition-all text-left ${isSelected
-                          ? 'bg-primary/10 border-primary text-white ring-1 ring-primary'
-                          : 'bg-slate-900/40 border-slate-800 text-slate-400 hover:border-slate-700 hover:bg-slate-900/60'
+                        ? 'bg-primary/10 border-primary text-white ring-1 ring-primary'
+                        : 'bg-slate-900/40 border-slate-800 text-slate-400 hover:border-slate-700 hover:bg-slate-900/60'
                         }`}
                     >
                       <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors ${isSelected ? 'bg-primary border-primary' : 'border-slate-700'

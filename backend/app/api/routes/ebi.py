@@ -18,6 +18,7 @@ def _ebi_to_out(ebi) -> EbiOut:
     return EbiOut(
         id=ebi.id,
         ebi_date=ebi.ebi_date,
+        tema=ebi.tema,
         group_number=ebi.group_number,
         coordinator_id=ebi.coordinator_id,
         status=ebi.status,

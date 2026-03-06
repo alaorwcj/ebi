@@ -38,6 +38,7 @@ def create_new_ebi(db: Session, ebi_in) -> Ebi:
 
     ebi = Ebi(
         ebi_date=ebi_in.ebi_date,
+        tema=ebi_in.tema,
         group_number=ebi_in.group_number,
         coordinator_id=ebi_in.coordinator_id,
         status=EbiStatus.ABERTO,
@@ -56,7 +57,7 @@ def update_existing_ebi(db: Session, ebi_id: int, ebi_in) -> Ebi:
     if ebi.status == EbiStatus.ENCERRADO:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="EBI closed")
 
-    for field in ["ebi_date", "group_number", "coordinator_id"]:
+    for field in ["ebi_date", "tema", "group_number", "coordinator_id"]:
         value = getattr(ebi_in, field, None)
         if value is not None:
             if field == "coordinator_id":
