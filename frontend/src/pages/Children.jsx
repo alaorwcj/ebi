@@ -126,14 +126,6 @@ export default function Children() {
             <span className="material-symbols-outlined">add_circle</span>
             <span>Cadastrar Criança</span>
           </button>
-
-          <button
-            className="flex-1 py-4 bg-slate-800 border border-slate-700 hover:bg-slate-700 rounded-2xl flex items-center justify-center gap-2 font-bold text-white shadow-lg active:scale-95 transition-all"
-            onClick={() => navigate('/pulseiras', { state: { children: items } })}
-          >
-            <Printer size={20} />
-            <span>Gerar Pulseiras</span>
-          </button>
         </div>
       </div>
 
