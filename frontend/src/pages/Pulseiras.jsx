@@ -71,12 +71,12 @@ export default function Pulseiras() {
                                 return (
                                     <React.Fragment key={`wristbands-${c.id || index}`}>
                                         {/* Via da Criança */}
-                                        <div className="flex border-b border-dashed border-gray-400 relative overflow-hidden" style={{ width: "24.5cm", height: "2cm", backgroundColor: "#eef2ff" }}>
-                                            <div className="w-[3cm] border-r border-dashed border-gray-400 bg-gray-200 flex items-center justify-center text-[10px] text-gray-500 flex-shrink-0 text-center px-1">
+                                        <div className="flex border-b border-dashed border-gray-400 relative overflow-hidden" style={{ width: "24.5cm", height: "2cm", backgroundColor: "#ffffff" }}>
+                                            <div className="w-[3cm] border-r border-dashed border-gray-400 bg-white flex items-center justify-center text-[10px] text-gray-700 flex-shrink-0 text-center px-1 print:text-transparent">
                                                 Área de Fechamento / Adesivo
                                             </div>
 
-                                            <div className="flex-1 flex items-center px-4 justify-between" style={{ color: "#1e3a8a" }}>
+                                            <div className="flex-1 flex items-center px-4 justify-between" style={{ color: "#000000" }}>
                                                 <div className="flex items-center gap-6">
                                                     <div className="uppercase font-bold tracking-widest text-[10px]" style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}>CRIANÇA</div>
                                                     <div className="flex flex-col justify-center">
@@ -96,12 +96,12 @@ export default function Pulseiras() {
                                         </div>
 
                                         {/* Via do Responsável */}
-                                        <div className="flex border-b border-dashed border-gray-400 relative overflow-hidden" style={{ width: "24.5cm", height: "2cm", backgroundColor: "#fff1f2" }}>
-                                            <div className="w-[3cm] border-r border-dashed border-gray-400 bg-gray-200 flex items-center justify-center text-[10px] text-gray-500 flex-shrink-0 text-center px-1">
+                                        <div className="flex border-b border-dashed border-gray-400 relative overflow-hidden" style={{ width: "24.5cm", height: "2cm", backgroundColor: "#ffffff" }}>
+                                            <div className="w-[3cm] border-r border-dashed border-gray-400 bg-white flex items-center justify-center text-[10px] text-gray-700 flex-shrink-0 text-center px-1 print:text-transparent">
                                                 Área de Fechamento / Adesivo
                                             </div>
 
-                                            <div className="flex-1 flex items-center px-4 justify-between" style={{ color: "#9f1239" }}>
+                                            <div className="flex-1 flex items-center px-4 justify-between" style={{ color: "#000000" }}>
                                                 <div className="flex items-center gap-6">
                                                     <div className="uppercase font-bold tracking-widest text-[10px]" style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}>RESP.</div>
                                                     <div className="flex flex-col justify-center">
@@ -118,7 +118,7 @@ export default function Pulseiras() {
                                                 {/* PIN do lado direito  */}
                                                 <div className="flex flex-col items-end justify-center pr-2">
                                                     <span className="text-[10px] font-bold opacity-70 uppercase tracking-widest leading-none mb-1">PIN DE SEGURANÇA</span>
-                                                    <span className="font-black text-[22px] tracking-[4px] leading-none bg-red-900/10 px-3 py-1 rounded-lg border border-red-900/20">{pin}</span>
+                                                    <span className="font-black text-[22px] tracking-[4px] leading-none bg-white px-3 py-1 rounded-lg border border-gray-800">{pin}</span>
                                                 </div>
                                             </div>
                                         </div>
