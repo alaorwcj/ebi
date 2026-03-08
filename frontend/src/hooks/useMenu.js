@@ -13,6 +13,7 @@ export function useMenu() {
       { label: "EBIs", icon: "Calendar", path: "/ebis" },
       { label: "Crianças", icon: "Users", path: "/children" },
       { label: "Usuários", icon: "UsersRound", path: "/users" },
+      { label: "Administradores", icon: "UsersRound", path: "/admins" },
       { label: "Relatório Geral", icon: "FileText", path: "/reports/general" },
     ];
 

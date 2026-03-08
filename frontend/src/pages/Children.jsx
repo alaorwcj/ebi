@@ -1,19 +1,26 @@
 import { useEffect, useState } from "react";
-import { get, post, put } from "../api/client.js";
+import { get, post, put, del } from "../api/client.js";
+import { getRole } from "../api/auth.js";
 import FormField from "../components/FormField.jsx";
 import Modal from "../components/Modal.jsx";
+import DatePicker from "../components/DatePicker.jsx";
+import { formatDate } from "../utils/format.js";
 import { maskPhone } from "../utils/mask.js";
 import { mensagemParaUsuario } from "../utils/apiErrors.js";
 import { validatePhone } from "../utils/validators.js";
 import { toast } from "sonner";
-import { Trash2, Baby, User, Phone } from "lucide-react";
+import { Trash2, Baby, User, Phone, Printer } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const initialForm = {
   name: "",
+  birth_date: "",
   guardians: [{ name: "", phone: "" }]
 };
 
 export default function Children() {
+  const role = getRole();
+  const navigate = useNavigate();
   const [items, setItems] = useState([]);
   const [form, setForm] = useState(initialForm);
   const [editingId, setEditingId] = useState(null);
@@ -40,6 +47,7 @@ export default function Children() {
     setEditingId(item.id);
     setForm({
       name: item.name,
+      birth_date: item.birth_date ? item.birth_date : "",
       guardians: (item.guardians || []).map((guardian) => ({
         name: guardian.name,
         phone: maskPhone(guardian.phone || "")
@@ -76,6 +84,17 @@ export default function Children() {
     setForm({ ...form, guardians });
   }
 
+  async function handleDelete(item) {
+    if (!window.confirm(`Tem certeza que deseja excluir a criança '${item.name}'?\n\nIsso só é possível se não houver presenças ativas na EBI para ela.`)) return;
+    try {
+      await del(`/children/${item.id}`);
+      toast.success("Criança excluída com sucesso.");
+      load();
+    } catch (err) {
+      toast.error(mensagemParaUsuario(err, "Erro ao excluir criança."));
+    }
+  }
+
   function handleAddGuardian() {
     setForm({ ...form, guardians: [...form.guardians, { name: "", phone: "" }] });
   }
@@ -99,13 +118,23 @@ export default function Children() {
             onKeyDown={(e) => e.key === 'Enter' && load()}
           />
         </div>
-        <button
-          className="gradient-button w-full py-4 rounded-2xl flex items-center justify-center gap-2 font-bold text-white shadow-lg active:scale-95 transition-transform"
-          onClick={openCreateModal}
-        >
-          <span className="material-symbols-outlined">add_circle</span>
-          <span>Cadastrar Criança</span>
-        </button>
+        <div className="flex gap-4">
+          <button
+            className="gradient-button flex-1 py-4 rounded-2xl flex items-center justify-center gap-2 font-bold text-white shadow-lg active:scale-95 transition-transform"
+            onClick={openCreateModal}
+          >
+            <span className="material-symbols-outlined">add_circle</span>
+            <span>Cadastrar Criança</span>
+          </button>
+
+          <button
+            className="flex-1 py-4 bg-slate-800 border border-slate-700 hover:bg-slate-700 rounded-2xl flex items-center justify-center gap-2 font-bold text-white shadow-lg active:scale-95 transition-all"
+            onClick={() => navigate('/pulseiras', { state: { children: items } })}
+          >
+            <Printer size={20} />
+            <span>Gerar Pulseiras</span>
+          </button>
+        </div>
       </div>
 
       <div className="flex items-center justify-between px-2">
@@ -130,6 +159,9 @@ export default function Children() {
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p className="compact-card-meta">Criança</p>
                   <h3 className="compact-card-title">{item.name}</h3>
+                  {item.birth_date && (
+                    <p className="text-[11px] text-slate-500 font-medium mt-1">Nascimento: {formatDate(item.birth_date)}</p>
+                  )}
                 </div>
                 <span className="compact-card-tag" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid var(--border)", color: "var(--muted)" }}>
                   Registro
@@ -152,13 +184,24 @@ export default function Children() {
               <div className="compact-card-divider" />
 
               <div className="compact-card-actions">
-                <button
-                  type="button"
-                  onClick={() => openEditModal(item)}
-                  className="compact-card-btn-primary"
-                >
-                  Editar
-                </button>
+                {role === "ADMINISTRADOR" && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => openEditModal(item)}
+                      className="compact-card-btn-primary"
+                    >
+                      Editar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(item)}
+                      className="flex-1 py-1.5 rounded-lg border border-red-500/30 text-red-500 text-xs font-semibold hover:bg-red-500 hover:text-white transition-colors"
+                    >
+                      Excluir
+                    </button>
+                  </>
+                )}
               </div>
             </article>
           );
@@ -199,6 +242,11 @@ export default function Children() {
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
             icon={<span className="material-symbols-outlined text-[18px]">child_care</span>}
+          />
+          <DatePicker
+            label="Data de Nascimento (opcional)"
+            value={form.birth_date || ""}
+            onChange={(e) => setForm({ ...form, birth_date: e.target.value })}
           />
 
           <div className="card rounded-2xl border border-white/5 bg-white/5 p-4 space-y-4">

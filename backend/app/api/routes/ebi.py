@@ -8,7 +8,7 @@ from app.models.user import UserRole
 from app.repositories.ebi_repo import get_ebi_by_id, list_ebis
 from app.schemas.ebi import EbiCreate, EbiDetail, EbiList, EbiOut, EbiUpdate
 from app.schemas.presence import PresenceCheckout, PresenceCreate, PresenceOut
-from app.services.ebi_service import add_presence, checkout_presence, close_ebi, create_new_ebi, reopen_ebi, update_existing_ebi
+from app.services.ebi_service import add_presence, checkout_presence, close_ebi, create_new_ebi, reopen_ebi, update_existing_ebi, delete_existing_ebi
 
 router = APIRouter()
 
@@ -75,7 +75,7 @@ def get_ebi_api(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="EBI not found")
     return EbiDetail(
         **_ebi_to_out(ebi).model_dump(),
-        presences=[_presence_to_out(p) for p in ebi.presences],
+        presences=[_presence_to_out(p, include_pin=True) for p in ebi.presences],
     )
 
 
@@ -131,3 +131,12 @@ def reopen_ebi_api(
 ):
     ebi = reopen_ebi(db, ebi_id, current_user.id)
     return _ebi_to_out(ebi)
+
+
+@router.delete("/{ebi_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_ebi_api(
+    ebi_id: int,
+    db: Session = Depends(get_db),
+    _=Depends(require_role(UserRole.ADMINISTRADOR)),
+):
+    delete_existing_ebi(db, ebi_id)

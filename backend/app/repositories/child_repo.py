@@ -36,3 +36,8 @@ def update_child(db: Session, child: Child) -> Child:
     db.commit()
     db.refresh(child)
     return child
+
+
+def delete_child(db: Session, child: Child) -> None:
+    db.delete(child)
+    db.commit()

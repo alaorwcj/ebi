@@ -39,3 +39,8 @@ def update_ebi(db: Session, ebi: Ebi) -> Ebi:
     db.commit()
     db.refresh(ebi)
     return ebi
+
+
+def delete_ebi(db: Session, ebi: Ebi) -> None:
+    db.delete(ebi)
+    db.commit()

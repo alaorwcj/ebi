@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import { get, post } from "../api/client.js";
+import { Link, useParams, useNavigate } from "react-router-dom";
+import { Printer } from "lucide-react";
+import { get, post, del } from "../api/client.js";
 import FormField from "../components/FormField.jsx";
 import Table from "../components/Table.jsx";
 import ConfirmModal from "../components/ConfirmModal.jsx";
@@ -14,6 +15,7 @@ import { toast } from "sonner";
 
 export default function EbiDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const role = getRole();
   const [ebi, setEbi] = useState(null);
   const [children, setChildren] = useState([]);
@@ -26,6 +28,7 @@ export default function EbiDetail() {
   const [noPinMode, setNoPinMode] = useState(false);
   const [entryPinOpen, setEntryPinOpen] = useState(false);
   const [entryPinCode, setEntryPinCode] = useState("");
+  const [selectedPresences, setSelectedPresences] = useState([]);
 
   async function load() {
     try {
@@ -97,6 +100,47 @@ export default function EbiDetail() {
     catch (err) { toast.error(mensagemParaUsuario(err, "Erro ao reabrir.")); }
   }
 
+  async function handleDeleteEbi() {
+    if (!window.confirm(`ATENÇÃO: Deseja realmente excluir este Relatório EBI?\n\nIsso apagará permanentemente todas as presenças.`)) return;
+    try {
+      await del(`/ebi/${id}`);
+      toast.success("EBI excluído.");
+      navigate("/ebis");
+    } catch (err) { toast.error(mensagemParaUsuario(err, "Erro ao excluir EBI.")); }
+  }
+
+  function togglePresenceSelection(id) {
+    if (selectedPresences.includes(id)) {
+      setSelectedPresences(selectedPresences.filter(p => p !== id));
+    } else {
+      setSelectedPresences([...selectedPresences, id]);
+    }
+  }
+
+  function toggleAll(e) {
+    if (e.target.checked) {
+      setSelectedPresences(ebi.presences.map(p => p.id));
+    } else {
+      setSelectedPresences([]);
+    }
+  }
+
+  function handleGenerateWristbands() {
+    const selectedItems = ebi.presences.filter(p => selectedPresences.includes(p.id));
+    if (selectedItems.length === 0) return toast.error("Selecione pelo menos uma criança para gerar pulseiras.");
+
+    const printPayload = selectedItems.map(p => ({
+      id: p.child_id,
+      name: p.child_name,
+      pin: p.pin_code || "ERRO",
+      guardians: [
+        { name: p.guardian_name_day, phone: p.guardian_phone_day }
+      ]
+    }));
+
+    navigate('/pulseiras', { state: { children: printPayload } });
+  }
+
   if (!ebi) {
     return (
       <div className="glass p-6 animate-pulse">
@@ -135,6 +179,18 @@ export default function EbiDetail() {
               <span className="material-symbols-outlined">how_to_reg</span>
               Registrar presença
             </button>
+            <button
+              type="button"
+              className={`button px-5 flex items-center gap-2 font-bold transition-all ${selectedPresences.length > 0
+                ? 'bg-slate-700 text-white hover:bg-slate-600 border border-slate-500 shadow-[0_0_15px_rgba(255,255,255,0.1)]'
+                : 'bg-slate-800/50 text-slate-500 border border-slate-800 cursor-not-allowed'
+                }`}
+              disabled={selectedPresences.length === 0}
+              onClick={handleGenerateWristbands}
+            >
+              <Printer size={16} />
+              Gerar {selectedPresences.length > 0 ? `(${selectedPresences.length}) ` : ""}Pulseiras
+            </button>
             {["COORDENADORA", "ADMINISTRADOR"].includes(role) && (
               <>
                 <button
@@ -157,6 +213,16 @@ export default function EbiDetail() {
                 </button>
               </>
             )}
+            {role === "ADMINISTRADOR" && (
+              <button
+                type="button"
+                className="button bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500 hover:text-white transition-colors"
+                onClick={handleDeleteEbi}
+              >
+                <span className="material-symbols-outlined">delete</span>
+                Excluir EBI
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -164,6 +230,17 @@ export default function EbiDetail() {
       <div className="glass p-1">
         <Table
           columns={[
+            {
+              key: "select",
+              label: (
+                <input
+                  type="checkbox"
+                  className="rounded border-slate-600 bg-slate-800 w-4 h-4 cursor-pointer accent-primary"
+                  onChange={toggleAll}
+                  checked={ebi.presences.length > 0 && selectedPresences.length === ebi.presences.length}
+                />
+              )
+            },
             { key: "child_name", label: "Criança" },
             { key: "guardian_name_day", label: "Responsável" },
             { key: "entry_at", label: "Entrada" },
@@ -171,6 +248,14 @@ export default function EbiDetail() {
           ]}
           rows={ebi.presences.map((item) => ({
             ...item,
+            select: (
+              <input
+                type="checkbox"
+                className="rounded border-slate-600 bg-slate-800 w-4 h-4 cursor-pointer accent-primary"
+                checked={selectedPresences.includes(item.id)}
+                onChange={() => togglePresenceSelection(item.id)}
+              />
+            ),
             entry_at: formatDateTime(item.entry_at),
             exit_at: formatDateTime(item.exit_at)
           }))}

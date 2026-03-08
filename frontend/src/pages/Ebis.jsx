@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { get, post } from "../api/client.js";
+import { get, post, del } from "../api/client.js";
 import DatePicker from "../components/DatePicker.jsx";
 import FormField from "../components/FormField.jsx";
 import Modal from "../components/Modal.jsx";
@@ -67,6 +67,17 @@ export default function Ebis() {
       closeModal();
       load();
     } catch (err) { toast.error(mensagemParaUsuario(err, "Erro ao criar EBI.")); }
+  }
+
+  async function handleDeleteEbi(item) {
+    if (!window.confirm(`ATENÇÃO: Deseja realmente excluir o Relatório EBI Turma ${item.group_number} do dia ${formatDate(item.ebi_date)}?\n\nEsta ação excluirá também todas as presenças vinculadas a ele.`)) return;
+    try {
+      await del(`/ebi/${item.id}`);
+      toast.success("EBI e dependências excluídos com sucesso.");
+      load();
+    } catch (err) {
+      toast.error(mensagemParaUsuario(err, "Erro ao excluir EBI."));
+    }
   }
 
   function handleSearch(e) {
@@ -148,6 +159,16 @@ export default function Ebis() {
                     <span className="material-symbols-outlined text-sm">bar_chart</span>
                     Relatório
                   </Link>
+                )}
+                {role === "ADMINISTRADOR" && (
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteEbi(item)}
+                    className="flex-[0.5] py-2.5 rounded-xl border border-red-500/30 text-red-500 text-sm font-medium hover:bg-red-500 hover:text-white transition-colors flex items-center justify-center gap-2"
+                  >
+                    <span className="material-symbols-outlined text-sm">delete</span>
+                    Excluir
+                  </button>
                 )}
               </div>
             </div>

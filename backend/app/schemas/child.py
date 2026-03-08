@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field
+from datetime import date
 
 
 class GuardianBase(BaseModel):
@@ -19,6 +20,7 @@ class GuardianOut(GuardianBase):
 
 class ChildBase(BaseModel):
     name: str = Field(min_length=2, max_length=200)
+    birth_date: date | None = None
 
 
 class ChildCreate(ChildBase):
@@ -27,6 +29,7 @@ class ChildCreate(ChildBase):
 
 class ChildUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=2, max_length=200)
+    birth_date: date | None = None
     guardians: list[GuardianCreate] | None = None
 
 

@@ -13,12 +13,12 @@ const initialForm = {
   full_name: "",
   email: "",
   phone: "",
-  role: "COORDENADORA",
+  role: "ADMINISTRADOR",
   group_number: 1,
   password: ""
 };
 
-export default function Users() {
+export default function Admins() {
   const role = getRole();
   const [items, setItems] = useState([]);
   const [form, setForm] = useState(initialForm);
@@ -30,7 +30,7 @@ export default function Users() {
 
   async function load() {
     try {
-      const data = await get(`/users?exclude_role=ADMINISTRADOR&search=${encodeURIComponent(search)}&page=${page}`);
+      const data = await get(`/users?role=ADMINISTRADOR&search=${encodeURIComponent(search)}&page=${page}`);
       setItems(data.items);
       setTotal(data.total);
     } catch (err) {
@@ -90,7 +90,7 @@ export default function Users() {
           <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-primary transition-colors">search</span>
           <input
             className="w-full bg-slate-900/50 border border-slate-800 rounded-2xl py-4 pl-12 pr-4 focus:ring-2 focus:ring-primary focus:border-transparent transition-all placeholder:text-slate-600 text-slate-100"
-            placeholder="Search Users..."
+            placeholder="Search Administrators..."
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -103,13 +103,13 @@ export default function Users() {
             onClick={openCreateModal}
           >
             <span className="material-symbols-outlined">add_circle</span>
-            <span>Cadastrar Usuário</span>
+            <span>Cadastrar Administrador</span>
           </button>
         )}
       </div>
 
       <div className="flex items-center justify-between px-2">
-        <h2 className="text-lg font-bold text-slate-400 uppercase tracking-widest text-[10px]">Team Members</h2>
+        <h2 className="text-lg font-bold text-slate-400 uppercase tracking-widest text-[10px]">Administrators</h2>
         <div className="text-primary text-sm font-semibold flex items-center gap-1 cursor-pointer">
           View All <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
         </div>
@@ -133,7 +133,7 @@ export default function Users() {
                   <UserCircle size={20} strokeWidth={2} aria-hidden />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p className="compact-card-meta">Colaboradora</p>
+                  <p className="compact-card-meta">Perfil</p>
                   <h3 className="compact-card-title">{item.full_name}</h3>
                 </div>
                 <span className="compact-card-tag" style={roleStyles}>
@@ -205,7 +205,7 @@ export default function Users() {
 
       <Modal
         open={modalOpen}
-        title={editingId ? "Editar Usuário" : "Novo Usuário"}
+        title={editingId ? "Editar Administrador" : "Novo Administrador"}
         onClose={closeModal}
         contentClassName="sm:max-w-[480px]"
       >
@@ -237,8 +237,7 @@ export default function Users() {
                 value={form.role}
                 onChange={(e) => setForm({ ...form, role: e.target.value })}
               >
-                <option value="COORDENADORA">Coordenadora</option>
-                <option value="COLABORADORA">Colaboradora</option>
+                <option value="ADMINISTRADOR">Administrador</option>
               </select>
             </FormField>
             <FormField label="Grupo">
@@ -268,7 +267,7 @@ export default function Users() {
 
           <div className="flex gap-3 mt-4">
             <button type="submit" className="flex-1 gradient-button rounded-xl py-3 text-white font-bold tracking-wide">
-              {editingId ? "Salvar" : "Criar Usuário"}
+              {editingId ? "Salvar" : "Criar Administrador"}
             </button>
             <button type="button" className="flex-1 bg-slate-100/5 border border-white/10 rounded-xl py-3 text-white font-medium" onClick={closeModal}>
               Cancelar

@@ -5,11 +5,13 @@ import RoleRoute from "./components/RoleRoute.jsx";
 import Login from "./pages/Login.jsx";
 import Profile from "./pages/Profile.jsx";
 import Users from "./pages/Users.jsx";
+import Admins from "./pages/Admins.jsx";
 import Children from "./pages/Children.jsx";
 import Ebis from "./pages/Ebis.jsx";
 import EbiDetail from "./pages/EbiDetail.jsx";
 import EbiReport from "./pages/EbiReport.jsx";
 import GeneralReport from "./pages/GeneralReport.jsx";
+import Pulseiras from "./pages/Pulseiras.jsx";
 
 export default function App() {
   return (
@@ -28,8 +30,16 @@ export default function App() {
         <Route
           path="/users"
           element={
-            <RoleRoute allowed={["ADMINISTRADOR"]}>
+            <RoleRoute allowed={["ADMINISTRADOR", "COORDENADORA"]}>
               <Users />
+            </RoleRoute>
+          }
+        />
+        <Route
+          path="/admins"
+          element={
+            <RoleRoute allowed={["ADMINISTRADOR"]}>
+              <Admins />
             </RoleRoute>
           }
         />
@@ -52,6 +62,7 @@ export default function App() {
             </RoleRoute>
           }
         />
+        <Route path="/pulseiras" element={<Pulseiras />} />
       </Route>
     </Routes>
   );

@@ -13,6 +13,7 @@ def create_new_child(db: Session, child_in) -> Child:
     primary = child_in.guardians[0]
     child = Child(
         name=child_in.name,
+        birth_date=child_in.birth_date,
         guardian_name=primary.name,
         guardian_phone=primary.phone,
     )
@@ -27,6 +28,9 @@ def update_existing_child(db: Session, child_id: int, child_in) -> Child:
 
     if child_in.name is not None:
         child.name = child_in.name
+    
+    if child_in.birth_date is not None:
+        child.birth_date = child_in.birth_date
 
     if child_in.guardians is not None:
         if not child_in.guardians:
@@ -39,3 +43,21 @@ def update_existing_child(db: Session, child_id: int, child_in) -> Child:
         child.guardian_phone = primary.phone
 
     return update_child(db, child)
+
+
+from sqlalchemy.exc import IntegrityError
+from app.repositories.child_repo import delete_child
+
+def delete_existing_child(db: Session, child_id: int) -> None:
+    child = get_child_by_id(db, child_id)
+    if not child:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Child not found")
+    
+    try:
+        delete_child(db, child)
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, 
+            detail="Não é possível excluir esta criança pois há registros de presença vinculados a ela."
+        )

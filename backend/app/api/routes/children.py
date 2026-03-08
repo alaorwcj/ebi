@@ -3,10 +3,11 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.core.db import get_db
-from app.core.deps import get_current_user
+from app.core.deps import get_current_user, require_role
+from app.models.user import UserRole
 from app.repositories.child_repo import get_child_by_id, list_children
 from app.schemas.child import ChildCreate, ChildList, ChildOut, ChildUpdate
-from app.services.child_service import create_new_child, update_existing_child
+from app.services.child_service import create_new_child, update_existing_child, delete_existing_child
 
 router = APIRouter()
 
@@ -49,6 +50,15 @@ def update_child_api(
     child_id: int,
     payload: ChildUpdate,
     db: Session = Depends(get_db),
-    _=Depends(get_current_user),
+    _=Depends(require_role(UserRole.ADMINISTRADOR)),
 ):
     return update_existing_child(db, child_id, payload)
+
+
+@router.delete("/{child_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_child_api(
+    child_id: int,
+    db: Session = Depends(get_db),
+    _=Depends(require_role(UserRole.ADMINISTRADOR)),
+):
+    delete_existing_child(db, child_id)

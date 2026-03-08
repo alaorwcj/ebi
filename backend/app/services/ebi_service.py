@@ -9,7 +9,7 @@ from app.models.ebi_audit import EbiAudit
 from app.models.presence import EbiPresence
 from app.models.user import UserRole
 from app.repositories.child_repo import get_child_by_id
-from app.repositories.ebi_repo import create_ebi, get_ebi_by_id, update_ebi
+from app.repositories.ebi_repo import create_ebi, get_ebi_by_id, update_ebi, delete_ebi
 from app.repositories.presence_repo import create_presence, get_presence_by_ebi_child, get_presence_by_id, update_presence
 from app.repositories.user_repo import get_user_by_id
 from app.services.whatsapp_service import send_pin_whatsapp
@@ -160,3 +160,9 @@ def reopen_ebi(db: Session, ebi_id: int, performed_by: int) -> Ebi:
     audit = EbiAudit(ebi_id=ebi.id, action="REOPEN", performed_by=performed_by)
     db.add(audit)
     return update_ebi(db, ebi)
+
+def delete_existing_ebi(db: Session, ebi_id: int) -> None:
+    ebi = get_ebi_by_id(db, ebi_id)
+    if not ebi:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="EBI not found")
+    delete_ebi(db, ebi)

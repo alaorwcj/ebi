@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.core.security import get_password_hash
 from app.models.user import User
-from app.repositories.user_repo import create_user, get_user_by_email, get_user_by_id, update_user
+from app.repositories.user_repo import create_user, get_user_by_email, get_user_by_id, update_user, delete_user
 
 
 def create_new_user(db: Session, user_in) -> User:
@@ -41,3 +41,20 @@ def update_existing_user(db: Session, user_id: int, user_in) -> User:
         user.password_hash = get_password_hash(user_in.password)
 
     return update_user(db, user)
+
+
+from sqlalchemy.exc import IntegrityError
+
+def delete_existing_user(db: Session, user_id: int) -> None:
+    user = get_user_by_id(db, user_id)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    
+    try:
+        delete_user(db, user)
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, 
+            detail="Não é possível excluir este usuário pois ele está vinculado a EBIs (como coordenador ou colaborador). Considere inativá-lo ou reatribuir os EBIs."
+        )
